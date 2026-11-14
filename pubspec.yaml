@@ -35,6 +35,27 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # APPLICATION WILL USE [BLOC] STATEMANAGEMENT
+  flutter_bloc: ^9.1.1
+
+  # ALLOW THE PROJECT TO SHARE THE CONTENT VIA [SHARE_PLUS]
+  share_plus: ^13.3.1
+
+  # APPLICATION WILL USE [DIO] FOT NETWORK CONNECTION
+  dio: ^5.11.1
+
+  # APPLICATION WILL STORE THE DATA LOCALY WITH [SQFLITE]
+  sqflite: ^2.4.6
+
+  # APPLICATION WILL HANDLE THE ERRORS ANS SUCESS EFFECTIVELY [DARTZ]
+  dartz: ^0.10.1
+
+  # THE BLOC WILL UPDATE THE STATUS WITH MINOR CHANGES HAPPNING ON ENTITIES USING [EQUATABLE] 
+  equatable: ^3.0.0
+
+  # THE APPLICATION WILL NAV USING [GO_ROUTER]
+  go_router: ^18.1.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -45,6 +66,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  
+  # THE PACKAGE HELP US TO TEST THE BUSINESS LOGIC BY MOCKING IT.
+  mocktail: ^1.0.5
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
