@@ -141,8 +141,8 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                           textInputAction: TextInputAction.next,
                           onChanged: (value) {
                             context.read<HomeBloc>().add(
-                                  FromLocationChangedEvent(value),
-                                );
+                              FromLocationChangedEvent(value),
+                            );
                           },
                         ),
                         CustomFieldWidget(
@@ -153,8 +153,8 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                           textInputAction: TextInputAction.done,
                           onChanged: (value) {
                             context.read<HomeBloc>().add(
-                                  ToLocationChangedEvent(value),
-                                );
+                              ToLocationChangedEvent(value),
+                            );
                           },
                         ),
                       ],
