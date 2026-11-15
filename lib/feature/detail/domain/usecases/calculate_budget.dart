@@ -6,17 +6,27 @@ class CalculateBudget {
   const CalculateBudget();
 
   BudgetEntity calculate({
-    required double distanceInKm,
-    required int tripDays,
-    required int hotelNights,
+    double? rawDistance,
+    DateTime? startDate,
+    DateTime? endDate,
     required TravelStyle travelStyle,
+    double? distanceInKm,
+    int? tripDays,
+    int? hotelNights,
   }) {
+    final start = DateTime(startDate!.year, startDate.month, startDate.day);
+    final end = DateTime(endDate!.year, endDate.month, endDate.day);
+    final diffDays = end.difference(start).inDays;
+    final finalTripDays = diffDays + 1;
+    final finalHotelNights = diffDays;
+    final finalRoundTripKm = (rawDistance! / 1000) * 2;
+
     final multiplier = BudgetConstants.getMultiplier(travelStyle);
 
-    final baseTravel = distanceInKm * BudgetConstants.travelRPK;
-    final baseHotel = hotelNights * BudgetConstants.hotelRPN;
-    final baseFood = tripDays * BudgetConstants.foodRPD;
-    final baseLocalTransport = tripDays * BudgetConstants.localTRPD;
+    final baseTravel = finalRoundTripKm * BudgetConstants.travelRPK;
+    final baseHotel = finalHotelNights * BudgetConstants.hotelRPN;
+    final baseFood = finalTripDays * BudgetConstants.foodRPD;
+    final baseLocalTransport = finalTripDays * BudgetConstants.localTRPD;
 
     final travelCost = (baseTravel * multiplier).roundToDouble();
     final hotelCost = (baseHotel * multiplier).roundToDouble();
@@ -32,9 +42,9 @@ class CalculateBudget {
       foodCost: foodCost,
       localTransportCost: localTransportCost,
       totalCost: totalCost,
-      distanceInKm: distanceInKm,
-      tripDays: tripDays,
-      hotelNights: hotelNights,
+      distanceInKm: finalRoundTripKm,
+      tripDays: finalTripDays,
+      hotelNights: finalHotelNights,
     );
   }
 }

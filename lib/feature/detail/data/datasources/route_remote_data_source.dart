@@ -1,13 +1,12 @@
 import 'package:aivsol_solo_travel/core/error/failures.dart';
 import 'package:aivsol_solo_travel/core/extensions/dio_extension.dart';
 import 'package:aivsol_solo_travel/core/utility/api_end_points.dart';
-import 'package:aivsol_solo_travel/feature/detail/domain/entities/route_entity.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import '../models/route_model.dart';
 
 abstract class RouteRemoteDataSource {
-  Future<Either<Failure, RouteEntity>> getRoundTripDistance({
+  Future<Either<Failure, RouteModel>> getRoundTripDistance({
     required double fromLatitude,
     required double fromLongitude,
     required double toLatitude,
@@ -20,7 +19,7 @@ class RouteRemoteDataSourceImpl implements RouteRemoteDataSource {
   RouteRemoteDataSourceImpl({required this.dio});
 
   @override
-  Future<Either<Failure, RouteEntity>> getRoundTripDistance({
+  Future<Either<Failure, RouteModel>> getRoundTripDistance({
     required double fromLatitude,
     required double fromLongitude,
     required double toLatitude,

@@ -33,33 +33,18 @@ class EstimateBudgetBloc
     result.fold((failure) => emit(EstimateBudgetFailure(failure.message)), (
       routeEntity,
     ) {
-      final start = DateTime(
-        event.startDate.year,
-        event.startDate.month,
-        event.startDate.day,
-      );
-      final end = DateTime(
-        event.endDate.year,
-        event.endDate.month,
-        event.endDate.day,
-      );
-      final diffDays = end.difference(start).inDays;
-      final tripDays = diffDays + 1;
-      final hotelNights = diffDays;
-      final roundTripKm = (routeEntity.rawdistance / 1000) * 2;
-
       final budget = calculateBudget.calculate(
-        distanceInKm: roundTripKm,
-        tripDays: tripDays,
-        hotelNights: hotelNights,
+        rawDistance: routeEntity.rawdistance,
+        startDate: event.startDate,
+        endDate: event.endDate,
         travelStyle: event.travelStyle,
       );
       emit(
         EstimateBudgetSuccess(
           budget: budget,
-          cachedDistanceInKm: roundTripKm,
-          tripDays: tripDays,
-          hotelNights: hotelNights,
+          cachedDistanceInKm: budget.distanceInKm,
+          tripDays: budget.tripDays,
+          hotelNights: budget.hotelNights,
           currentStyle: event.travelStyle,
         ),
       );
