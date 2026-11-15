@@ -1,69 +1,147 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_bloc.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_state.dart';
 import 'package:flutter/material.dart';
-
-class _BudgetItem {
-  final String title;
-  final String subtitle;
-  final String amount;
-  final IconData icon;
-
-  const _BudgetItem({
-    required this.title,
-    required this.subtitle,
-    required this.amount,
-    required this.icon,
-  });
-}
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class DetailBudgetSectionWidget extends StatelessWidget {
-  final double totalBudget;
-  final List<_BudgetItem> items;
+  final VoidCallback? onRetry;
 
-  const DetailBudgetSectionWidget({
-    super.key,
-    required this.totalBudget,
-    required this.items,
-  });
+  const DetailBudgetSectionWidget({super.key, this.onRetry});
 
-  static const _dummyItems = [
-    _BudgetItem(
-      title: 'Travel (Train / Flight)',
-      subtitle: 'Direct trains & connector',
-      amount: '₹4,000',
-      icon: Icons.train_outlined,
-    ),
-    _BudgetItem(
-      title: 'Stay (Hostel/Hotel)',
-      subtitle: 'Cliff view boutique dorm/ro...',
-      amount: '₹4,500',
-      icon: Icons.bed_outlined,
-    ),
-    _BudgetItem(
-      title: 'Food & Dining',
-      subtitle: 'Cafes & fresh coastal catch...',
-      amount: '₹2,000',
-      icon: Icons.restaurant_outlined,
-    ),
-    _BudgetItem(
-      title: 'Local Transport',
-      subtitle: 'Scooter rental & local autos',
-      amount: '₹2,000',
-      icon: Icons.two_wheeler_outlined,
-    ),
-  ];
-
-  static DetailBudgetSectionWidget dummy() {
-    return const DetailBudgetSectionWidget(
-      totalBudget: 12500,
-      items: _dummyItems,
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<EstimateBudgetBloc, EstimateBudgetState>(
+      builder: (context, state) {
+        return switch (state) {
+          EstimateBudgetInitial() => const _InitialBudgetWidget(),
+          EstimateBudgetLoading() => const _LoadingBudgetWidget(),
+          EstimateBudgetFailure() => _FailureBudgetWidget(
+            message: state.errorMessage,
+            onRetry: onRetry,
+          ),
+          EstimateBudgetSuccess() => _SucessBudgetWidget(state: state),
+        };
+      },
     );
+  }
+}
+
+class _InitialBudgetWidget extends StatelessWidget {
+  const _InitialBudgetWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.all(24),
+      child: Center(child: Text('Budget ready to estimate.')),
+    );
+  }
+}
+
+class _LoadingBudgetWidget extends StatelessWidget {
+  const _LoadingBudgetWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 36),
+      child: Center(
+        child: Column(
+          children: [
+            SizedBox(
+              height: 28,
+              width: 28,
+              child: CircularProgressIndicator(strokeWidth: 2.5),
+            ),
+            SizedBox(height: 12),
+            Text('Calculating route distance & budget...'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FailureBudgetWidget extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const _FailureBudgetWidget({required this.message, this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(
+            Icons.error_outline_rounded,
+            color: Colors.red.shade400,
+            size: 36,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Budget estimation failed',
+                  style: TextStyle(fontWeight: FontWeight.w600),
+                ),
+                Text(message, maxLines: 2, overflow: TextOverflow.ellipsis),
+              ],
+            ),
+          ),
+          if (onRetry != null)
+            IconButton(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SucessBudgetWidget extends StatelessWidget {
+  final EstimateBudgetSuccess state;
+  const _SucessBudgetWidget({required this.state});
+
+  String formatCurrency(double amount) {
+    return '₹${amount.round().toString()}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final formatted =
-        '₹${totalBudget.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}';
+    final budget = state.budget;
+    final items = [
+      _BudgetItem(
+        title: 'Travel (Road / Flight)',
+        subtitle: 'Round-trip: ${budget.distanceInKm.toStringAsFixed(0)} km',
+        amount: formatCurrency(budget.travelCost),
+        icon: Icons.train_outlined,
+      ),
+      _BudgetItem(
+        title: 'Stay (Hostel/Hotel)',
+        subtitle: '${budget.hotelNights} nights accommodation',
+        amount: formatCurrency(budget.hotelCost),
+        icon: Icons.bed_outlined,
+      ),
+      _BudgetItem(
+        title: 'Food & Dining',
+        subtitle: '${budget.tripDays} days meal allowance',
+        amount: formatCurrency(budget.foodCost),
+        icon: Icons.restaurant_outlined,
+      ),
+      _BudgetItem(
+        title: 'Local Transport',
+        subtitle: '${budget.tripDays} days local commuting',
+        amount: formatCurrency(budget.localTransportCost),
+        icon: Icons.two_wheeler_outlined,
+      ),
+    ];
 
     return Padding(
       padding: const .only(top: 20),
@@ -84,7 +162,7 @@ class DetailBudgetSectionWidget extends StatelessWidget {
               Tooltip(
                 decoration: BoxDecoration(
                   color: AppColors.textPrimary.withValues(alpha: 0.9),
-                  borderRadius: .circular(8),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 constraints: BoxConstraints(
                   maxWidth: MediaQuery.sizeOf(context).width - 20,
@@ -92,7 +170,7 @@ class DetailBudgetSectionWidget extends StatelessWidget {
                 textStyle: context.textTheme.bodyMedium?.copyWith(
                   color: AppColors.background,
                 ),
-                message: 'Prices are approximate and may vary depending on availability and booking windows.',
+                message: 'Prices are calculated based on round-trip distance, hotel nights, and daily allowances.',
                 child: const Icon(
                   Icons.info_outline,
                   size: 18,
@@ -103,12 +181,12 @@ class DetailBudgetSectionWidget extends StatelessWidget {
           ),
           const SizedBox(height: 2),
           Row(
-            crossAxisAlignment: .end,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                formatted,
+                formatCurrency(state.budget.totalCost),
                 style: context.textTheme.headlineMedium?.copyWith(
-                  fontSize: 32,
+                  fontSize: state is EstimateBudgetLoading ? 24 : 32,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -142,28 +220,40 @@ class DetailBudgetSectionWidget extends StatelessWidget {
               ],
             ),
             child: Column(
-              children: [
-                ...items.asMap().entries.map((entry) {
-                  final isLast = entry.key == items.length - 1;
-                  return Column(
-                    children: [
-                      _BudgetRow(item: entry.value),
-                      if (!isLast)
-                        Divider(
-                          height: 1,
-                          indent: 56,
-                          color: context.themeData.dividerColor.withAlpha(60),
-                        ),
-                    ],
-                  );
-                }),
-              ],
+              children: items.asMap().entries.map((entry) {
+                final isLast = entry.key == items.length - 1;
+                return Column(
+                  children: [
+                    _BudgetRow(item: entry.value),
+                    if (!isLast)
+                      Divider(
+                        height: 1,
+                        indent: 56,
+                        color: context.themeData.dividerColor.withAlpha(60),
+                      ),
+                  ],
+                );
+              }).toList(),
             ),
           ),
         ],
       ),
     );
   }
+}
+
+class _BudgetItem {
+  final String title;
+  final String subtitle;
+  final String amount;
+  final IconData icon;
+
+  const _BudgetItem({
+    required this.title,
+    required this.subtitle,
+    required this.amount,
+    required this.icon,
+  });
 }
 
 class _BudgetRow extends StatelessWidget {
