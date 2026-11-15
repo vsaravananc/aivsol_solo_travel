@@ -10,6 +10,8 @@ import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_he
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_share_sheet_widget.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_weather_section_widget.dart';
 import 'package:aivsol_solo_travel/feature/home/domain/entities/location_entity.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,7 +93,10 @@ class _DetailScreenState extends State<DetailScreen> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => context.pop(),
+          onPressed: () {
+            context.read<HomeBloc>().add(const RevertSelectedEvent());
+            context.pop();
+          },
         ),
         title: const Text('Trip Detail'),
         actions: [

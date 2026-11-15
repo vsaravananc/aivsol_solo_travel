@@ -25,7 +25,7 @@ class TripGeocodingRemoteDataSourceImpl
     final sanitizedCity = _sanitizeCityName(cityName);
     try {
       final response = await dio.get(
-        '${ApiEndPoints.openMeteo}search',
+        ApiEndPoints.openMeteoGeoCoding,
         queryParameters: {
           'name': sanitizedCity,
           'count': 1,

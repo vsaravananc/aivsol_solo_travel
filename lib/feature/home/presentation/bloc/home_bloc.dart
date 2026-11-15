@@ -11,6 +11,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<LocationsSwappedEvent>(_onLocationsSwapped);
     on<DateRangeChangedEvent>(_onDateRangeChanged);
     on<TravelStyleChangedEvent>(_onTravelStyleChanged);
+    on<RevertSelectedEvent>(_onRevertSelected);
   }
 
   @override
@@ -69,5 +70,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     Emitter<HomeState> emit,
   ) {
     emit(state.copyWith(travelStyle: event.travelStyle));
+  }
+
+  void _onRevertSelected(RevertSelectedEvent event, Emitter<HomeState> emit) {
+    emit(state.copyWith(
+      from: '',
+      to: '',
+    ));
   }
 }

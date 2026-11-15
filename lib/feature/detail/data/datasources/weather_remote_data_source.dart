@@ -34,7 +34,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
 
     try {
       final response = await dio.get(
-        '${ApiEndPoints.openMeteo}forecast',
+        ApiEndPoints.openMeteoForecast,
         queryParameters: {
           'latitude': latitude,
           'longitude': longitude,

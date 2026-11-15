@@ -34,10 +34,7 @@ class DateRangeChangedEvent extends HomeEvent {
   final DateTime startDate;
   final DateTime endDate;
 
-  const DateRangeChangedEvent({
-    required this.startDate,
-    required this.endDate,
-  });
+  const DateRangeChangedEvent({required this.startDate, required this.endDate});
 
   @override
   List<Object?> get props => [startDate, endDate];
@@ -50,4 +47,8 @@ class TravelStyleChangedEvent extends HomeEvent {
 
   @override
   List<Object?> get props => [travelStyle];
+}
+
+class RevertSelectedEvent extends HomeEvent {
+  const RevertSelectedEvent();
 }
