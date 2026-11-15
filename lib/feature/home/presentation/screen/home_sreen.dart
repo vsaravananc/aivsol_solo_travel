@@ -1,4 +1,5 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/widgets/date_select_widget.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/widgets/from_to_input_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -45,6 +46,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const FromToInputWidget(),
+            const DateSelectWidget()
           ],
         ),
       ),

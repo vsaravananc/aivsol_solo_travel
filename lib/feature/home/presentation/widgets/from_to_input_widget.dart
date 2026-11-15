@@ -31,6 +31,7 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
     toController.dispose();
     fromFocusNode.dispose();
     toFocusNode.dispose();
+    rotationTurns.dispose();
     super.dispose();
   }
 

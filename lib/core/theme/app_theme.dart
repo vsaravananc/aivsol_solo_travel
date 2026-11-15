@@ -9,6 +9,7 @@ abstract final class AppColors {
   static const Color textSecondary = Color(0xFF8E8E93);
   static const Color border = Color(0xFFE5E5EA);
   static const Color error = Color(0xFFFF3B30);
+  static const Color bgGrey = Color(0xFFEFF2F7);
 }
 
 abstract final class LightTheme {
