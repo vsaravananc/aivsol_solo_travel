@@ -1,22 +1,11 @@
+import 'package:aivsol_solo_travel/core/enums/share_option.dart';
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
-
-class ShareOptionItem {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  const ShareOptionItem({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-  });
-}
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class DetailShareSheetWidget extends StatelessWidget {
   final String from;
@@ -54,67 +43,24 @@ class DetailShareSheetWidget extends StatelessWidget {
     );
   }
 
-  List<ShareOptionItem> _buildOptions(BuildContext context) {
-    return [
-      ShareOptionItem(
-        title: 'Open in Google Maps',
-        subtitle: 'Explore your destination',
-        icon: Icons.map_outlined,
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Opening Google Maps for $to...'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-      ),
-      ShareOptionItem(
-        title: 'Find Flights / Trains',
-        subtitle: 'Compare travel options',
-        icon: Icons.flight_takeoff_outlined,
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Searching flights & trains from $from to $to...'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-      ),
-      ShareOptionItem(
-        title: 'Find Hotels',
-        subtitle: 'Find accommodation for your dates',
-        icon: Icons.hotel_outlined,
-        onTap: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Finding hotels in $to for $dateRange...'),
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        },
-      ),
-      ShareOptionItem(
-        title: 'Share Trip Plan',
-        subtitle: 'Share your itinerary with friends',
-        icon: Icons.share_outlined,
-        onTap: () {
-          SharePlus.instance.share(
-            ShareParams(
-              text:
-                  'Check out my solo trip plan from $from to $to ($dateRange, $days Days) - Style: $travelStyle!',
-            ),
-          );
-        },
-      ),
-    ];
+  Future<void> launchOption(ShareOption option) async {
+    if (option == ShareOption.shareTrip) {
+      SharePlus.instance.share(
+        ShareParams(
+          text:
+              'Check out my solo trip plan from $from to $to ($dateRange, $days Days) - Style: $travelStyle!',
+        ),
+      );
+    } else {
+      //// need to add the from date and to date to autofill
+      final url = option.buildUrl(from: 'Chennai', destination: 'Bengaluru');
+      if (url == null) return;
+      await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final options = _buildOptions(context);
-
     return CupertinoActionSheet(
       title: Text(
         'Explore & Share Options',
@@ -122,17 +68,18 @@ class DetailShareSheetWidget extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
-      message: const Text(
+      message: Text(
         'Choose an option to explore or share your itinerary.',
-        style: TextStyle(fontSize: 13),
+        style: context.textTheme.bodySmall,
       ),
-      actions: options.map((option) {
+      actions: ShareOption.values.map((option) {
         return CupertinoActionSheetAction(
           onPressed: () {
             Navigator.pop(context);
-            option.onTap();
+            launchOption(option);
           },
           child: Row(
+            spacing: 12,
             children: [
               Container(
                 width: 36,
@@ -147,27 +94,21 @@ class DetailShareSheetWidget extends StatelessWidget {
                   color: AppColors.primary,
                 ),
               ),
-              const SizedBox(width: 14),
+
               Expanded(
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: .start,
+                  mainAxisSize: .min,
                   children: [
                     Text(
                       option.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF1E242B),
-                      ),
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        fontWeight: .w600,
+                      )
                     ),
                     Text(
                       option.subtitle,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w400,
-                        color: Color(0xFF8E8E93),
-                      ),
+                      style: context.textTheme.bodySmall,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
