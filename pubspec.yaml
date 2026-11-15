@@ -55,6 +55,8 @@ dependencies:
 
   # THE APPLICATION WILL NAV USING [GO_ROUTER]
   go_router: ^18.1.4
+  # THE APPLICAITON WILL USE THIS PACKAGE FOR SIMPLE ANIMATION
+  flutter_animate: ^4.5.2
 
 dev_dependencies:
   flutter_test:
