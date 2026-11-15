@@ -18,7 +18,9 @@ class HomeState extends Equatable {
 
   bool get isFormValid =>
       (from?.trim().isNotEmpty ?? false) &&
+      (from!.length > 3) &&
       (to?.trim().isNotEmpty ?? false) &&
+      (to!.length > 3) &&
       startDate != null &&
       endDate != null &&
       travelStyle != null;

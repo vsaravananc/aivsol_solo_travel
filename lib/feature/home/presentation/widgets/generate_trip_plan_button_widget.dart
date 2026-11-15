@@ -14,15 +14,12 @@ class GenerateTripPlanButtonWidget extends StatelessWidget {
     final isFormValid = context.select<HomeBloc, bool>(
       (bloc) => bloc.state.isFormValid,
     );
-    final isHomeReady = context.select<HomeBloc, bool>(
-      (bloc) => bloc.state.isFormValid,
-    );
     final isLocationLoading = context.select<LocationBloc, bool>(
       (bloc) => bloc.state is LocationLoading,
     );
 
-    final isLoading = isHomeReady || isLocationLoading;
-    final isEnabled = isFormValid && !isLoading;
+    final isLoading = isLocationLoading;
+    final isEnabled = isFormValid && !isLocationLoading;
 
     return Padding(
       padding: const EdgeInsets.only(top: 24),

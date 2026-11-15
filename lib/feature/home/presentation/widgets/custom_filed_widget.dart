@@ -7,7 +7,6 @@ class CustomFieldWidget extends StatelessWidget {
   final FocusNode? focusNode;
   final String hintText;
   final FormFieldValidator<String>? validator;
-  final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
   final TextInputAction textInputAction;
 
@@ -18,7 +17,6 @@ class CustomFieldWidget extends StatelessWidget {
     required this.hintText,
     this.focusNode,
     this.validator,
-    this.onChanged,
     this.onTap,
     this.textInputAction = TextInputAction.next,
   });
@@ -40,7 +38,6 @@ class CustomFieldWidget extends StatelessWidget {
           controller: controller,
           focusNode: focusNode,
           onTap: onTap,
-          onChanged: onChanged,
           validator: validator,
           textInputAction: textInputAction,
           onTapUpOutside: (_) {

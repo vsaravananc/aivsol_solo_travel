@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
@@ -19,18 +20,47 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
   late FocusNode fromFocusNode;
   late FocusNode toFocusNode;
   ValueNotifier<double> rotationTurns = ValueNotifier(0.0);
+  Timer? _fromDebounce;
+  Timer? _toDebounce;
+  static const _debounceDuration = Duration(milliseconds: 300);
 
   @override
   void initState() {
-    fromController = TextEditingController();
-    toController = TextEditingController();
+    super.initState();
+    fromController = TextEditingController()..addListener(_onFromChanged);
+    toController = TextEditingController()..addListener(_onToChanged);
     fromFocusNode = FocusNode();
     toFocusNode = FocusNode();
-    super.initState();
+  }
+
+  void _onFromChanged() {
+    _fromDebounce?.cancel();
+    _fromDebounce = Timer(_debounceDuration, () {
+      if (!mounted) return;
+      final currentFrom = context.read<HomeBloc>().state.from ?? '';
+      if (currentFrom != fromController.text) {
+        context.read<HomeBloc>().add(FromLocationChangedEvent(fromController.text));
+      }
+    });
+  }
+
+  void _onToChanged() {
+    _toDebounce?.cancel();
+    _toDebounce = Timer(_debounceDuration, () {
+      if (!mounted) return;
+      final currentTo = context.read<HomeBloc>().state.to ?? '';
+      if (currentTo != toController.text) {
+        context.read<HomeBloc>().add(ToLocationChangedEvent(toController.text));
+      }
+    });
   }
 
   @override
   void dispose() {
+    _fromDebounce?.cancel();
+    _toDebounce?.cancel();
+    fromController.removeListener(_onFromChanged);
+    toController.removeListener(_onToChanged);
     fromController.dispose();
     toController.dispose();
     fromFocusNode.dispose();
@@ -40,6 +70,8 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
   }
 
   void _handleSwap() {
+    _fromDebounce?.cancel();
+    _toDebounce?.cancel();
     rotationTurns.value += 0.5;
     final temp = fromController.text;
     fromController.text = toController.text;
@@ -139,11 +171,6 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                           focusNode: fromFocusNode,
                           hintText: 'Bengaluru (BLR)',
                           textInputAction: TextInputAction.next,
-                          onChanged: (value) {
-                            context.read<HomeBloc>().add(
-                              FromLocationChangedEvent(value),
-                            );
-                          },
                         ),
                         CustomFieldWidget(
                           label: 'To',
@@ -151,11 +178,6 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                           focusNode: toFocusNode,
                           hintText: 'Varkala, Kerala',
                           textInputAction: TextInputAction.done,
-                          onChanged: (value) {
-                            context.read<HomeBloc>().add(
-                              ToLocationChangedEvent(value),
-                            );
-                          },
                         ),
                       ],
                     ),
