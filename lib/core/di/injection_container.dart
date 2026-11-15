@@ -1,3 +1,4 @@
+import 'package:aivsol_solo_travel/core/database/app_database.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import '../../feature/detail/data/datasources/route_remote_data_source.dart';
@@ -121,4 +122,6 @@ Future<void> initDependencies() async {
   sl.registerFactory<SaveTripHistoryBloc>(
     () => SaveTripHistoryBloc(saveTripHistory: sl<SaveTripHistory>()),
   );
+
+  await AppDatabase.testing();
 }

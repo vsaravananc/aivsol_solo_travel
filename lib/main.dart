@@ -1,9 +1,11 @@
 import 'dart:io';
+
 import 'package:aivsol_solo_travel/core/di/injection_container.dart';
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:aivsol_solo_travel/core/utility/app_router.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_bloc.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/save_trip_history_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_bloc.dart';
@@ -26,10 +28,11 @@ class AivsolSoloTravel extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (context) => sl<HomeBloc>()),
-        BlocProvider(create: (context) => sl<LocationBloc>()),
-        BlocProvider<WeatherBloc>.value(value: sl<WeatherBloc>()),
-        BlocProvider<EstimateBudgetBloc>.value(value: sl<EstimateBudgetBloc>()),
+        BlocProvider(create: (_) => sl<HomeBloc>()),
+        BlocProvider(create: (_) => sl<LocationBloc>()),
+        BlocProvider(create: (_) => sl<WeatherBloc>()),
+        BlocProvider(create: (_) => sl<EstimateBudgetBloc>()),
+        BlocProvider(create: (_) => sl<SaveTripHistoryBloc>()),
       ],
       child: MaterialApp.router(
         routerConfig: AppRouter().router,

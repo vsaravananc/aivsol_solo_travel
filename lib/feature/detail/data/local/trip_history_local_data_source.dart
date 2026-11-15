@@ -3,10 +3,13 @@ import 'package:aivsol_solo_travel/core/database/app_database.dart';
 import 'package:aivsol_solo_travel/core/database/table/trip_history_table.dart';
 import 'package:aivsol_solo_travel/core/enums/travel_style.dart';
 import 'package:aivsol_solo_travel/feature/detail/domain/entities/budget_entity.dart';
+import 'package:aivsol_solo_travel/feature/detail/domain/entities/trip_history_entity.dart';
 import 'package:aivsol_solo_travel/feature/detail/domain/entities/weather_entity.dart';
 import 'package:aivsol_solo_travel/feature/home/domain/entities/location_entity.dart';
 
 class TripHistoryLocalDataSource {
+  // ── Write ─────────────────────────────────────────────────────────────────
+
   Future<int> saveTripHistory({
     required LocationEntity from,
     required LocationEntity to,
@@ -61,22 +64,87 @@ class TripHistoryLocalDataSource {
     return db.insert(TripHistoryTable.tableName, row);
   }
 
-  Future<List<Map<String, dynamic>>> getAllTripHistory() async {
-    final db = await AppDatabase.instance;
-    return db.query(
-      TripHistoryTable.tableName,
-      orderBy: '${TripHistoryTable.columnCreatedAt} DESC',
-    );
-  }
+  // ── Read ──────────────────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>?> getTripHistoryById(int id) async {
+  /// Returns all trip history rows, newest first, mapped to [TripHistoryEntity].
+  Future<List<TripHistoryEntity>> getAllTripHistory() async {
     final db = await AppDatabase.instance;
     final rows = await db.query(
       TripHistoryTable.tableName,
+      orderBy: '${TripHistoryTable.columnCreatedAt} DESC',
+    );
+    return rows.map(_rowToEntity).toList();
+  }
+
+  /// Returns the [limit] most recent trips, newest first.
+  Future<List<TripHistoryEntity>> getRecentTripHistory({
+    required int limit,
+  }) async {
+    final db = await AppDatabase.instance;
+    final rows = await db.query(
+      TripHistoryTable.tableName,
+      orderBy: '${TripHistoryTable.columnCreatedAt} DESC',
+      limit: limit,
+    );
+    return rows.map(_rowToEntity).toList();
+  }
+
+  // ── Delete ────────────────────────────────────────────────────────────────
+
+  Future<int> deleteTripHistory(int id) async {
+    final db = await AppDatabase.instance;
+    return db.delete(
+      TripHistoryTable.tableName,
       where: '${TripHistoryTable.columnId} = ?',
       whereArgs: [id],
-      limit: 1,
     );
-    return rows.isEmpty ? null : rows.first;
+  }
+
+  Future<int> clearAll() async {
+    final db = await AppDatabase.instance;
+    return db.delete(TripHistoryTable.tableName);
+  }
+
+  // ── Mapper ────────────────────────────────────────────────────────────────
+
+  TripHistoryEntity _rowToEntity(Map<String, dynamic> row) {
+    final styleName = row[TripHistoryTable.columnTravelStyle] as String;
+    final travelStyle = TravelStyle.values.firstWhere(
+      (e) => e.name == styleName,
+      orElse: () => TravelStyle.standard,
+    );
+
+    return TripHistoryEntity(
+      id: row[TripHistoryTable.columnId] as int,
+      createdAt: DateTime.parse(
+        row[TripHistoryTable.columnCreatedAt] as String,
+      ),
+      fromLocation: row[TripHistoryTable.columnFrom] as String,
+      toLocation: row[TripHistoryTable.columnTo] as String,
+      fromLat: (row[TripHistoryTable.columnFromLat] as num).toDouble(),
+      fromLong: (row[TripHistoryTable.columnFromLong] as num).toDouble(),
+      toLat: (row[TripHistoryTable.columnToLat] as num).toDouble(),
+      toLong: (row[TripHistoryTable.columnToLong] as num).toDouble(),
+      startDate: DateTime.parse(
+        row[TripHistoryTable.columnStartDate] as String,
+      ),
+      endDate: DateTime.parse(
+        row[TripHistoryTable.columnEndDate] as String,
+      ),
+      travelStyle: travelStyle,
+      travelCost: (row[TripHistoryTable.columnTravelCost] as num).toDouble(),
+      hotelCost: (row[TripHistoryTable.columnHotelCost] as num).toDouble(),
+      foodCost: (row[TripHistoryTable.columnFoodCost] as num).toDouble(),
+      localTransportCost:
+          (row[TripHistoryTable.columnLocalTransportCost] as num).toDouble(),
+      totalCost: (row[TripHistoryTable.columnTotalCost] as num).toDouble(),
+      distanceKm: (row[TripHistoryTable.columnDistanceKm] as num).toDouble(),
+      tripDays: row[TripHistoryTable.columnTripDays] as int,
+      hotelNights: row[TripHistoryTable.columnHotelNights] as int,
+      weatherTemperature:
+          (row[TripHistoryTable.columnWeatherTemperature] as num?)?.toDouble(),
+      weatherHumidity: row[TripHistoryTable.columnWeatherHumidity] as int?,
+      weatherCode: row[TripHistoryTable.columnWeatherCode] as int?,
+    );
   }
 }

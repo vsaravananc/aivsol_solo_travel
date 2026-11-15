@@ -1,7 +1,6 @@
 import 'package:aivsol_solo_travel/core/enums/travel_style.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_state.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
@@ -12,14 +11,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<DateRangeChangedEvent>(_onDateRangeChanged);
     on<TravelStyleChangedEvent>(_onTravelStyleChanged);
     on<RevertSelectedEvent>(_onRevertSelected);
-  }
-
-  @override
-  void onTransition(Transition<HomeEvent, HomeState> transition) {
-    debugPrint('-' * 80);
-    debugPrint(transition.toString().replaceAll(',', '\n'));
-    debugPrint('-' * 80);
-    super.onTransition(transition);
   }
 
   static HomeState _initialState() {

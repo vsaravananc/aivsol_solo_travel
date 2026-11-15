@@ -20,7 +20,6 @@ import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dar
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 
 class DetailScreen extends StatefulWidget {
@@ -83,16 +82,12 @@ class _DetailScreenState extends State<DetailScreen> {
     );
   }
 
-  /// Attempts to persist the trip once budget is ready.
-  /// Weather is optional — save proceeds even if weather failed.
   void _trySaveTripHistory({
     required EstimateBudgetState budgetState,
     required WeatherState weatherState,
   }) {
-    // Budget must be resolved before we can save.
     if (budgetState is! EstimateBudgetSuccess) return;
 
-    // Skip if already saved.
     final saveState = context.read<SaveTripHistoryBloc>().state;
     if (saveState is TripHistorySaved) return;
 
@@ -104,7 +99,6 @@ class _DetailScreenState extends State<DetailScreen> {
         endDate: widget.endDate,
         travelStyle: widget.travelStyleEnum,
         budget: budgetState.budget,
-        // Pass weather only when available; null is accepted by the usecase.
         weather: weatherState is WeatherSuccess ? weatherState.weather : null,
       ),
     );
@@ -112,87 +106,86 @@ class _DetailScreenState extends State<DetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<SaveTripHistoryBloc>(
-      create: (_) => GetIt.instance<SaveTripHistoryBloc>(),
-      child: BlocListener<SaveTripHistoryBloc, SaveTripHistoryState>(
-        listener: (context, saveState) {
-          // Optional: react to save result (e.g., log or show a snack).
-          // Currently silent — the save is a background side-effect.
+    return BlocListener<SaveTripHistoryBloc, SaveTripHistoryState>(
+      listener: (context, state) {
+        print('-' * 90);
+        print('state of trigger');
+        print('-' * 90);
+      },
+      child: BlocListener<EstimateBudgetBloc, EstimateBudgetState>(
+        listener: (context, budgetState) {
+          _trySaveTripHistory(
+            budgetState: budgetState,
+            weatherState: context.read<WeatherBloc>().state,
+          );
         },
-        child: BlocListener<EstimateBudgetBloc, EstimateBudgetState>(
-          listener: (context, budgetState) {
+        child: BlocListener<WeatherBloc, WeatherState>(
+          listener: (context, weatherState) {
+            print('state weater');
             _trySaveTripHistory(
-              budgetState: budgetState,
-              weatherState: context.read<WeatherBloc>().state,
+              budgetState: context.read<EstimateBudgetBloc>().state,
+              weatherState: weatherState,
             );
           },
-          child: BlocListener<WeatherBloc, WeatherState>(
-            listener: (context, weatherState) {
-              _trySaveTripHistory(
-                budgetState: context.read<EstimateBudgetBloc>().state,
-                weatherState: weatherState,
-              );
-            },
-            child: Scaffold(
-              appBar: AppBar(
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                  onPressed: () {
-                    context.read<HomeBloc>().add(const RevertSelectedEvent());
-                    context.pop();
-                  },
-                ),
-                title: const Text('Trip Detail'),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: GestureDetector(
-                      onTap: () => DetailShareSheetWidget.show(
-                        context,
-                        from: widget.from,
-                        to: widget.to,
-                        dateRange: widget.dateRange,
-                        days: widget.days,
-                        travelStyle: widget.travelStyleEnum.name,
-                        endDate: widget.endDate,
-                        startDate: widget.startDate,
-                      ),
-                      child: Container(
-                        width: 38,
-                        height: 38,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          CupertinoIcons.share,
-                          color: context.themeData.scaffoldBackgroundColor,
-                          size: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+          child: Scaffold(
+            appBar: AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                onPressed: () {
+                  context.read<HomeBloc>().add(const RevertSelectedEvent());
+                  context.pop();
+                },
               ),
-              body: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    DetailHeaderWidget(
+              title: const Text('Trip Detail'),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: GestureDetector(
+                    onTap: () => DetailShareSheetWidget.show(
+                      context,
                       from: widget.from,
                       to: widget.to,
                       dateRange: widget.dateRange,
                       days: widget.days,
                       travelStyle: widget.travelStyleEnum.name,
+                      endDate: widget.endDate,
+                      startDate: widget.startDate,
                     ),
-                    DetailBudgetSectionWidget(onRetry: _estimateBudget),
-                    DetailWeatherSectionWidget(
-                      cityName: widget.toPlace,
-                      onRetry: _fetchWeather,
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        CupertinoIcons.share,
+                        color: context.themeData.scaffoldBackgroundColor,
+                        size: 20,
+                      ),
                     ),
-                  ],
+                  ),
                 ),
+              ],
+            ),
+            body: SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DetailHeaderWidget(
+                    from: widget.from,
+                    to: widget.to,
+                    dateRange: widget.dateRange,
+                    days: widget.days,
+                    travelStyle: widget.travelStyleEnum.name,
+                  ),
+                  DetailBudgetSectionWidget(onRetry: _estimateBudget),
+                  DetailWeatherSectionWidget(
+                    cityName: widget.toPlace,
+                    onRetry: _fetchWeather,
+                  ),
+                ],
               ),
             ),
           ),

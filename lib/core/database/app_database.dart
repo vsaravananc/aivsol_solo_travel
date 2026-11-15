@@ -1,4 +1,5 @@
 import 'package:aivsol_solo_travel/core/database/table/trip_history_table.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -22,5 +23,19 @@ class AppDatabase {
         await db.execute(TripHistoryTable.createTableSql);
       },
     );
+  }
+
+  static Future<void> testing() async {
+    final db = await instance;
+
+    final count = await db.rawQuery('SELECT * FROM trip_history');
+
+      final tables = await db.rawQuery('''
+      SELECT name
+      FROM sqlite_master
+      WHERE type = 'table'
+      AND name NOT LIKE 'sqlite_%'
+    ''');
+    debugPrint('Total records: ${count.toString().replaceAll(',', '\n')}');
   }
 }

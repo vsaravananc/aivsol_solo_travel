@@ -13,6 +13,16 @@ class SaveTripHistoryBloc
     on<SaveTripHistoryRequested>(_onSaveTripHistoryRequested);
   }
 
+  @override
+  void onTransition(
+    Transition<SaveTripHistoryEvent, SaveTripHistoryState> transition,
+  ) {
+    print('-' * 40);
+    print(transition.toString().replaceAll(',', '\n'));
+    print('-' * 40);
+    super.onTransition(transition);
+  }
+
   Future<void> _onSaveTripHistoryRequested(
     SaveTripHistoryRequested event,
     Emitter<SaveTripHistoryState> emit,
