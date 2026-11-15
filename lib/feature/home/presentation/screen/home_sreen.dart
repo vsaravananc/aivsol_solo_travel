@@ -12,24 +12,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  // static const _months = [
-  //   'Jan',
-  //   'Feb',
-  //   'Mar',
-  //   'Apr',
-  //   'May',
-  //   'Jun',
-  //   'Jul',
-  //   'Aug',
-  //   'Sep',
-  //   'Oct',
-  //   'Nov',
-  //   'Dec',
-  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -62,36 +48,28 @@ class HomeScreen extends StatelessWidget {
             );
           } else if (state is LocationSuccess) {
             final homeState = context.read<HomeBloc>().state;
-            final start =
-                homeState.startDate ??
-                DateTime.now().add(const Duration(days: 1));
-            final end =
-                homeState.endDate ??
-                DateTime.now().add(const Duration(days: 5));
+            final start = homeState.startDate;
+            final end = homeState.endDate;
             final days =
-                end
-                    .difference(DateTime(start.year, start.month, start.day))
+                end!
+                    .difference(DateTime(start!.year, start.month, start.day))
                     .inDays +
                 1;
 
+            final dateFormatter = DateFormat('MMM d');
             final dateRange =
-                '${_months[start.month - 1]} ${start.day} – ${_months[end.month - 1]} ${end.day}';
-            final fromCity = homeState.from ?? 'Bengaluru';
-            final toCity = homeState.to ?? state.toLocation.name;
-            final fromCode = fromCity.length >= 3
-                ? fromCity.substring(0, 3).toUpperCase()
-                : fromCity.toUpperCase();
-
+                '${dateFormatter.format(start)} – ${dateFormatter.format(end)}';
+            final fromCity = homeState.from;
+            final toCity = homeState.to;
             context.push(
               AppRouter.detailRoute,
               extra: {
                 'from': fromCity,
                 'to': toCity,
-                'fromCode': fromCode,
                 'toPlace': state.toLocation.name,
                 'dateRange': dateRange,
                 'days': days,
-                'travelStyle': homeState.travelStyle?.name ?? 'Standard Style',
+                'travelStyle': homeState.travelStyle?.name,
                 'travelStyleEnum': homeState.travelStyle,
                 'fromLocation': state.fromLocation,
                 'destinationLocation': state.toLocation,
