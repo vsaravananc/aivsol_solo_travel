@@ -1,6 +1,6 @@
-import 'package:aivsol_solo_travel/core/database/table/trip_plan_table.dart';
+import 'package:aivsol_solo_travel/core/database/table/trip_history_table.dart';
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart' ;
+import 'package:path/path.dart';
 
 class AppDatabase {
   static const String _dbName = 'aivsol_solo_travel.db';
@@ -19,7 +19,7 @@ class AppDatabase {
       path,
       version: _dbVersion,
       onCreate: (db, version) async {
-        await db.execute(TripPlanTable.createTableSql);
+        await db.execute(TripHistoryTable.createTableSql);
       },
     );
   }

@@ -1,18 +1,22 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 import '../../feature/detail/data/datasources/route_remote_data_source.dart';
+import '../../feature/detail/data/local/trip_history_local_data_source.dart';
 import '../../feature/detail/data/datasources/weather_remote_data_source.dart';
 import '../../feature/detail/data/repositories/route_repository_impl.dart';
+import '../../feature/detail/data/repositories/trip_history_repository_impl.dart';
 import '../../feature/detail/data/repositories/weather_repository_impl.dart';
 import '../../feature/detail/domain/repositories/route_repository.dart';
+import '../../feature/detail/domain/repositories/trip_history_repository.dart';
 import '../../feature/detail/domain/repositories/weather_repository.dart';
 import '../../feature/detail/domain/usecases/calculate_budget.dart';
 import '../../feature/detail/domain/usecases/get_route_distance.dart';
 import '../../feature/detail/domain/usecases/get_weather_forecast.dart';
+import '../../feature/detail/domain/usecases/save_trip_history.dart';
 import '../../feature/detail/presentation/bloc/estimate_budget_bloc.dart';
+import '../../feature/detail/presentation/bloc/save_trip_history_bloc.dart';
 import '../../feature/detail/presentation/bloc/weather_bloc.dart';
 import '../../feature/home/data/datasources/trip_geocoding_remote_data_source.dart';
-import '../../feature/home/data/local/trip_plan_local_data_source.dart';
 import '../../feature/home/data/repositories/trip_geocoding_repository_impl.dart';
 import '../../feature/home/domain/repositories/trip_geocoding_repository.dart';
 import '../../feature/home/domain/usecases/get_location_coordinates.dart';
@@ -35,8 +39,18 @@ Future<void> initDependencies() async {
     return dio;
   });
 
-  sl.registerLazySingleton<TripPlanLocalDataSource>(
-    () => TripPlanLocalDataSource(),
+  sl.registerLazySingleton<TripHistoryLocalDataSource>(
+    () => TripHistoryLocalDataSource(),
+  );
+
+  sl.registerLazySingleton<TripHistoryRepository>(
+    () => TripHistoryRepositoryImpl(
+      localDataSource: sl<TripHistoryLocalDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<SaveTripHistory>(
+    () => SaveTripHistory(sl<TripHistoryRepository>()),
   );
 
   sl.registerLazySingleton<TripGeocodingRemoteDataSource>(
@@ -102,5 +116,9 @@ Future<void> initDependencies() async {
       getRouteDistance: sl<GetRouteDistance>(),
       calculateBudget: sl<CalculateBudget>(),
     ),
+  );
+
+  sl.registerFactory<SaveTripHistoryBloc>(
+    () => SaveTripHistoryBloc(saveTripHistory: sl<SaveTripHistory>()),
   );
 }

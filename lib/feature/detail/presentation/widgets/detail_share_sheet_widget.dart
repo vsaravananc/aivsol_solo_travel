@@ -4,6 +4,7 @@ import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -13,6 +14,8 @@ class DetailShareSheetWidget extends StatelessWidget {
   final String dateRange;
   final int days;
   final String travelStyle;
+  final DateTime startDate;
+  final DateTime endDate;
 
   const DetailShareSheetWidget({
     super.key,
@@ -21,6 +24,8 @@ class DetailShareSheetWidget extends StatelessWidget {
     required this.dateRange,
     required this.days,
     required this.travelStyle,
+    required this.startDate,
+    required this.endDate,
   });
 
   static Future<void> show(
@@ -30,6 +35,8 @@ class DetailShareSheetWidget extends StatelessWidget {
     required String dateRange,
     required int days,
     required String travelStyle,
+    required DateTime startDate,
+    required DateTime endDate,
   }) {
     return showCupertinoModalPopup<void>(
       context: context,
@@ -39,6 +46,8 @@ class DetailShareSheetWidget extends StatelessWidget {
         dateRange: dateRange,
         days: days,
         travelStyle: travelStyle,
+        endDate: endDate,
+        startDate: startDate,
       ),
     );
   }
@@ -48,12 +57,16 @@ class DetailShareSheetWidget extends StatelessWidget {
       SharePlus.instance.share(
         ShareParams(
           text:
-              'Check out my solo trip plan from $from to $to ($dateRange, $days Days) - Style: $travelStyle!',
+              'Check out my solo trip plan from $from to $to ($dateRange, $days days) with a $travelStyle travel style!',
         ),
       );
     } else {
-      //// need to add the from date and to date to autofill
-      final url = option.buildUrl(from: 'Chennai', destination: 'Bengaluru');
+      final url = option.buildUrl(
+        from: from,
+        destination: to,
+        fromdate: DateFormat('yyyy-MM-dd').format(startDate),
+        destinationdate: DateFormat('yyyy-MM-dd').format(endDate),
+      );
       if (url == null) return;
       await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
     }
@@ -88,11 +101,7 @@ class DetailShareSheetWidget extends StatelessWidget {
                   color: AppColors.primary.withAlpha(20),
                   shape: .circle,
                 ),
-                child: Icon(
-                  option.icon,
-                  size: 18,
-                  color: AppColors.primary,
-                ),
+                child: Icon(option.icon, size: 18, color: AppColors.primary),
               ),
 
               Expanded(
@@ -104,7 +113,7 @@ class DetailShareSheetWidget extends StatelessWidget {
                       option.title,
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: .w600,
-                      )
+                      ),
                     ),
                     Text(
                       option.subtitle,

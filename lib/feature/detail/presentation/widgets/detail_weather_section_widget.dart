@@ -6,6 +6,7 @@ import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_bloc
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
 
 class DetailWeatherSectionWidget extends StatelessWidget {
   final String cityName;
@@ -13,7 +14,7 @@ class DetailWeatherSectionWidget extends StatelessWidget {
 
   const DetailWeatherSectionWidget({
     super.key,
-    this.cityName = 'Varkala',
+    required this.cityName,
     this.onRetry,
   });
 
@@ -306,11 +307,10 @@ class _ForecastDayWidget extends StatelessWidget {
 
   const _ForecastDayWidget({required this.forecast});
 
-  static const _weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
   @override
   Widget build(BuildContext context) {
-    final dayLabel = _weekdays[forecast.date.weekday - 1];
+    final dayLabel = DateFormat.E().format(forecast.date);
     final icon = WeatherCodeHelper.getIcon(forecast.weatherCode);
 
     return Column(
