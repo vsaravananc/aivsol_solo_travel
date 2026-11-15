@@ -1,10 +1,14 @@
+import 'package:aivsol_solo_travel/feature/detail/presentation/screen/detail_screen.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/screen/History_recent_search_trips.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/screen/home_sreen.dart';
 import 'package:aivsol_solo_travel/main.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouter {
   static final String initalRoute = '/';
-  static final String homeRoute ='/home';
+  static final String homeRoute = '/home';
+  static final String detailRoute = '/detail';
+  static final String historyRoute = '/history';
 
   GoRouter get router => _goRouter;
   final GoRouter _goRouter = GoRouter(
@@ -14,9 +18,28 @@ class AppRouter {
         path: initalRoute,
         builder: (context, state) => const SplashScreen(),
       ),
-       GoRoute(
+      GoRoute(
         path: homeRoute,
         builder: (context, state) => const HomeScreen(),
+      ),
+      GoRoute(
+        path: historyRoute,
+        builder: (context, state) => const HistoryRecentSearchTrips(),
+      ),
+      GoRoute(
+        path: detailRoute,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>;
+          return DetailScreen(
+            from: extra['from'] as String,
+            to: extra['to'] as String,
+            fromCode: extra['fromCode'] as String,
+            toPlace: extra['toPlace'] as String,
+            dateRange: extra['dateRange'] as String,
+            days: extra['days'] as int,
+            travelStyle: extra['travelStyle'] as String,
+          );
+        },
       ),
     ],
   );
