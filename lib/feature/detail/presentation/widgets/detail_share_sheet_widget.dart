@@ -3,9 +3,9 @@ import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 class DetailShareSheetWidget extends StatelessWidget {
   final String from;
@@ -86,7 +86,7 @@ class DetailShareSheetWidget extends StatelessWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withAlpha(20),
-                  shape: BoxShape.circle,
+                  shape: .circle,
                 ),
                 child: Icon(
                   option.icon,
@@ -110,7 +110,7 @@ class DetailShareSheetWidget extends StatelessWidget {
                       option.subtitle,
                       style: context.textTheme.bodySmall,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: .ellipsis,
                     ),
                   ],
                 ),
@@ -126,7 +126,7 @@ class DetailShareSheetWidget extends StatelessWidget {
       }).toList(),
       cancelButton: CupertinoActionSheetAction(
         isDefaultAction: true,
-        onPressed: () => Navigator.pop(context),
+        onPressed: () => context.canPop(),
         child: const Text('Cancel'),
       ),
     );
