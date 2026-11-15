@@ -16,6 +16,7 @@ import '../../feature/home/data/local/trip_plan_local_data_source.dart';
 import '../../feature/home/data/repositories/trip_geocoding_repository_impl.dart';
 import '../../feature/home/domain/repositories/trip_geocoding_repository.dart';
 import '../../feature/home/domain/usecases/get_location_coordinates.dart';
+import '../../feature/home/domain/usecases/resolve_trip_locations.dart';
 import '../../feature/home/presentation/bloc/home_bloc.dart';
 import '../../feature/home/presentation/bloc/location_bloc.dart';
 
@@ -79,10 +80,17 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton<CalculateBudget>(() => const CalculateBudget());
 
+  sl.registerLazySingleton<ResolveTripLocations>(
+    () => const ResolveTripLocations(),
+  );
+
   sl.registerFactory<HomeBloc>(() => HomeBloc());
 
   sl.registerFactory<LocationBloc>(
-    () => LocationBloc(getLocationCoordinates: sl<GetLocationCoordinates>()),
+    () => LocationBloc(
+      getLocationCoordinates: sl<GetLocationCoordinates>(),
+      resolveTripLocations: sl<ResolveTripLocations>(),
+    ),
   );
 
   sl.registerFactory<WeatherBloc>(

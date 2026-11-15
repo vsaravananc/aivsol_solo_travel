@@ -5,4 +5,6 @@ abstract final class ApiEndPoints {
   static const String hotel = '$_google/travel/hotels';
 
   static const String osrm = 'https://router.project-osrm.org/route/v1/driving';
+  static const String openMeteo =
+      'https://geocoding-api.open-meteo.com/v1/';
 }
