@@ -55,7 +55,6 @@ class HomeScreen extends StatelessWidget {
                     .difference(DateTime(start!.year, start.month, start.day))
                     .inDays +
                 1;
-
             final dateFormatter = DateFormat('MMM d');
             final dateRange =
                 '${dateFormatter.format(start)} – ${dateFormatter.format(end)}';
@@ -69,7 +68,6 @@ class HomeScreen extends StatelessWidget {
                 'toPlace': state.toLocation.name,
                 'dateRange': dateRange,
                 'days': days,
-                'travelStyle': homeState.travelStyle?.name,
                 'travelStyleEnum': homeState.travelStyle,
                 'fromLocation': state.fromLocation,
                 'destinationLocation': state.toLocation,

@@ -18,31 +18,27 @@ import 'package:go_router/go_router.dart';
 class DetailScreen extends StatefulWidget {
   final String from;
   final String to;
-  final String fromCode;
   final String toPlace;
   final String dateRange;
   final int days;
-  final String travelStyle;
-  final TravelStyle? travelStyleEnum;
-  final LocationEntity? fromLocation;
-  final LocationEntity? destinationLocation;
-  final DateTime? startDate;
-  final DateTime? endDate;
+  final TravelStyle travelStyleEnum;
+  final LocationEntity fromLocation;
+  final LocationEntity destinationLocation;
+  final DateTime startDate;
+  final DateTime endDate;
 
   const DetailScreen({
     super.key,
     required this.from,
     required this.to,
-    required this.fromCode,
     required this.toPlace,
     required this.dateRange,
     required this.days,
-    required this.travelStyle,
-    this.travelStyleEnum,
-    this.fromLocation,
-    this.destinationLocation,
-    this.startDate,
-    this.endDate,
+    required this.travelStyleEnum,
+    required this.fromLocation,
+    required this.destinationLocation,
+    required this.startDate,
+    required this.endDate,
   });
 
   @override
@@ -53,25 +49,14 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-
     _fetchWeather();
     _estimateBudget();
   }
 
   void _fetchWeather() {
-    final destination =
-        widget.destinationLocation ??
-        LocationEntity(
-          name: widget.toPlace,
-          latitude: 8.7379, // default fallback coordinates (Varkala)
-          longitude: 76.7163,
-        );
-
-    final start =
-        widget.startDate ?? DateTime.now().add(const Duration(days: 1));
-    final end =
-        widget.endDate ??
-        start.add(Duration(days: widget.days > 0 ? widget.days - 1 : 0));
+    final destination = widget.destinationLocation;
+    final start = widget.startDate;
+    final end = widget.endDate;
 
     context.read<WeatherBloc>().add(
       FetchWeatherEvent(
@@ -83,30 +68,11 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   void _estimateBudget() {
-    final from =
-        widget.fromLocation ??
-        LocationEntity(
-          name: widget.from,
-          latitude: 12.9716, // Bengaluru fallback coordinates
-          longitude: 77.5946,
-        );
-
-    final to =
-        widget.destinationLocation ??
-        LocationEntity(
-          name: widget.toPlace,
-          latitude: 8.7379, // Varkala fallback coordinates
-          longitude: 76.7163,
-        );
-
-    final start =
-        widget.startDate ?? DateTime.now().add(const Duration(days: 1));
-    final end =
-        widget.endDate ??
-        start.add(Duration(days: widget.days > 0 ? widget.days - 1 : 0));
-
-    final style =
-        widget.travelStyleEnum ?? _parseTravelStyle(widget.travelStyle);
+    final from = widget.fromLocation;
+    final to = widget.destinationLocation;
+    final start = widget.startDate;
+    final end = widget.endDate;
+    final style = widget.travelStyleEnum;
 
     context.read<EstimateBudgetBloc>().add(
       EstimateBudgetCalculationEvent(
@@ -117,13 +83,6 @@ class _DetailScreenState extends State<DetailScreen> {
         travelStyle: style,
       ),
     );
-  }
-
-  TravelStyle _parseTravelStyle(String styleName) {
-    final lower = styleName.toLowerCase();
-    if (lower.contains('budget')) return TravelStyle.budget;
-    if (lower.contains('comfort')) return TravelStyle.comfort;
-    return TravelStyle.standard;
   }
 
   @override
@@ -145,7 +104,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 to: widget.to,
                 dateRange: widget.dateRange,
                 days: widget.days,
-                travelStyle: widget.travelStyle,
+                travelStyle: widget.travelStyleEnum.name,
               ),
               child: Container(
                 width: 38,
@@ -174,7 +133,7 @@ class _DetailScreenState extends State<DetailScreen> {
               to: widget.to,
               dateRange: widget.dateRange,
               days: widget.days,
-              travelStyle: widget.travelStyle,
+              travelStyle: widget.travelStyleEnum.name,
             ),
             DetailBudgetSectionWidget(onRetry: _estimateBudget),
             DetailWeatherSectionWidget(
