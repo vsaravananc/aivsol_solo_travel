@@ -1,13 +1,10 @@
-import 'package:aivsol_solo_travel/core/di/injection_container.dart';
 import 'package:aivsol_solo_travel/core/enums/travel_style.dart';
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_event.dart';
-import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_state.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_event.dart';
-import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_state.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_budget_section_widget.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_header_widget.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_share_sheet_widget.dart';
