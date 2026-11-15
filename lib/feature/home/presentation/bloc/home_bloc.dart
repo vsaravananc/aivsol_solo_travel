@@ -1,7 +1,7 @@
 import 'package:aivsol_solo_travel/core/enums/travel_style.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_state.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
@@ -48,14 +48,20 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     LocationsSwappedEvent event,
     Emitter<HomeState> emit,
   ) {
-    emit(state.copyWith(from: state.to, to: state.from));
+    emit(state.copyWith(
+      from: state.to,
+      to: state.from,
+    ));
   }
 
   void _onDateRangeChanged(
     DateRangeChangedEvent event,
     Emitter<HomeState> emit,
   ) {
-    emit(state.copyWith(startDate: event.startDate, endDate: event.endDate));
+    emit(state.copyWith(
+      startDate: event.startDate,
+      endDate: event.endDate,
+    ));
   }
 
   void _onTravelStyleChanged(

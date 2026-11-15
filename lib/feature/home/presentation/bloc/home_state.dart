@@ -23,6 +23,8 @@ class HomeState extends Equatable {
       endDate != null &&
       travelStyle != null;
 
+  @override
+  List<Object?> get props => [from, to, startDate, endDate, travelStyle];
   HomeState copyWith({
     String? from,
     String? to,
@@ -38,13 +40,4 @@ class HomeState extends Equatable {
       travelStyle: travelStyle ?? this.travelStyle,
     );
   }
-
-  @override
-  List<Object?> get props => [
-        from,
-        to,
-        startDate,
-        endDate,
-        travelStyle,
-      ];
 }
