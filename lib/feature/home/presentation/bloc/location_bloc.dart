@@ -13,7 +13,6 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     required this.resolveTripLocations,
   }) : super(const LocationInitial()) {
     on<ResolveTripLocationsEvent>(_onResolveTripLocations);
-    on<ResetLocationsEvent>(_onResetLocations);
   }
 
   Future<void> _onResolveTripLocations(
@@ -38,12 +37,5 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
         ),
       ),
     );
-  }
-
-  void _onResetLocations(
-    ResetLocationsEvent event,
-    Emitter<LocationState> emit,
-  ) {
-    emit(const LocationInitial());
   }
 }

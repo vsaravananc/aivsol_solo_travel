@@ -19,7 +19,3 @@ class ResolveTripLocationsEvent extends LocationEvent {
   @override
   List<Object?> get props => [fromCity, toCity];
 }
-
-class ResetLocationsEvent extends LocationEvent {
-  const ResetLocationsEvent();
-}

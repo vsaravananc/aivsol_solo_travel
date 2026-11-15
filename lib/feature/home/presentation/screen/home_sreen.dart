@@ -1,4 +1,11 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
+import 'package:aivsol_solo_travel/core/utility/app_router.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_state.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_bloc.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_event.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_state.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/widgets/date_select_widget.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/widgets/from_to_input_widget.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/widgets/generate_trip_plan_button_widget.dart';
@@ -6,9 +13,26 @@ import 'package:aivsol_solo_travel/feature/home/presentation/widgets/recently_se
 import 'package:aivsol_solo_travel/feature/home/presentation/widgets/travel_style_select_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
+
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -28,32 +52,128 @@ class HomeScreen extends StatelessWidget {
         ),
         title: const Text('Solo Travler'),
       ),
-      body: SingleChildScrollView(
-        padding: const .all(12),
-        child: Column(
-          crossAxisAlignment: .start,
-          children: [
-            Text(
-              'Where would you like to go?',
-              style: context.textTheme.headlineMedium,
-              maxLines: 2,
-              textAlign: .start,
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 2.0),
-              child: Text(
-                'Plan your next adventure effortlessly.',
-                style: context.textTheme.bodyMedium,
-                maxLines: 1,
+      body: MultiBlocListener(
+        listeners: [
+          // 1. Listen to HomeBloc for validation failure and triggering location resolution
+          BlocListener<HomeBloc, HomeState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status,
+            listener: (context, state) {
+              if (state.status == TripPlanStatus.failure &&
+                  state.errorMessage != null) {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.errorMessage!),
+                    backgroundColor: Colors.red.shade700,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } else if (state.status == TripPlanStatus.readyToResolve) {
+                // Prevent duplicate resolution requests
+                if (context.read<LocationBloc>().state is LocationLoading) {
+                  return;
+                }
+                context.read<LocationBloc>().add(
+                      ResolveTripLocationsEvent(
+                        fromCity: state.from!,
+                        toCity: state.to!,
+                      ),
+                    );
+                context.read<HomeBloc>().add(const ResetTripPlanStatusEvent());
+              }
+            },
+          ),
+          // 2. Listen to HomeBloc for city changes or swaps to clear stale coordinates
+          BlocListener<HomeBloc, HomeState>(
+            listenWhen: (previous, current) =>
+                previous.from != current.from || previous.to != current.to,
+            listener: (context, state) {
+              /// remove it
+            },
+          ),
+          // 3. Listen to LocationBloc for coordinate resolution outcomes
+          BlocListener<LocationBloc, LocationState>(
+            listener: (context, state) {
+              if (state is LocationFailure) {
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.errorMessage),
+                    backgroundColor: Colors.red.shade700,
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              } else if (state is LocationSuccess) {
+                final homeState = context.read<HomeBloc>().state;
+                final start = homeState.startDate ??
+                    DateTime.now().add(const Duration(days: 1));
+                final end = homeState.endDate ??
+                    DateTime.now().add(const Duration(days: 5));
+                final days = end
+                        .difference(
+                          DateTime(start.year, start.month, start.day),
+                        )
+                        .inDays +
+                    1;
+
+                final dateRange =
+                    '${_months[start.month - 1]} ${start.day} – ${_months[end.month - 1]} ${end.day}';
+                final fromCity = homeState.from ?? 'Bengaluru';
+                final toCity = homeState.to ?? state.toLocation.name;
+                final fromCode = fromCity.length >= 3
+                    ? fromCity.substring(0, 3).toUpperCase()
+                    : fromCity.toUpperCase();
+
+                context.push(
+                  AppRouter.detailRoute,
+                  extra: {
+                    'from': fromCity,
+                    'to': toCity,
+                    'fromCode': fromCode,
+                    'toPlace': state.toLocation.name,
+                    'dateRange': dateRange,
+                    'days': days,
+                    'travelStyle':
+                        homeState.travelStyle?.name ?? 'Standard Style',
+                    'travelStyleEnum': homeState.travelStyle,
+                    'fromLocation': state.fromLocation,
+                    'destinationLocation': state.toLocation,
+                    'startDate': start,
+                    'endDate': end,
+                  },
+                );
+              }
+            },
+          ),
+        ],
+        child: SingleChildScrollView(
+          padding: const .all(12),
+          child: Column(
+            crossAxisAlignment: .start,
+            children: [
+              Text(
+                'Where would you like to go?',
+                style: context.textTheme.headlineMedium,
+                maxLines: 2,
                 textAlign: .start,
               ),
-            ),
-            const FromToInputWidget(),
-            const DateSelectWidget(),
-            const TravelStyleSelectWidget(),
-            const GenerateTripPlanButtonWidget(),
-            const RecentlySearchTripsWidget(),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(top: 2.0),
+                child: Text(
+                  'Plan your next adventure effortlessly.',
+                  style: context.textTheme.bodyMedium,
+                  maxLines: 1,
+                  textAlign: .start,
+                ),
+              ),
+              const FromToInputWidget(),
+              const DateSelectWidget(),
+              const TravelStyleSelectWidget(),
+              const GenerateTripPlanButtonWidget(),
+              const RecentlySearchTripsWidget(),
+            ],
+          ),
         ),
       ),
     );
