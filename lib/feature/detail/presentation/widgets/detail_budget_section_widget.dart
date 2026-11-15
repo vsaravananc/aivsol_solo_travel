@@ -1,5 +1,6 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
+import 'package:aivsol_solo_travel/feature/detail/domain/entities/budget_entity.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_state.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +22,7 @@ class DetailBudgetSectionWidget extends StatelessWidget {
             message: state.errorMessage,
             onRetry: onRetry,
           ),
-          EstimateBudgetSuccess() => _SucessBudgetWidget(state: state),
+          EstimateBudgetSuccess() => _SucessBudgetWidget(budget: state.budget),
         };
       },
     );
@@ -106,16 +107,15 @@ class _FailureBudgetWidget extends StatelessWidget {
 }
 
 class _SucessBudgetWidget extends StatelessWidget {
-  final EstimateBudgetSuccess state;
-  const _SucessBudgetWidget({required this.state});
+  final BudgetEntity budget;
+  const _SucessBudgetWidget({required this.budget});
 
   String formatCurrency(double amount) {
-    return '₹${amount.round().toString()}';
+    return '₹${amount.round()}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final budget = state.budget;
     final items = [
       _BudgetItem(
         title: 'Travel (Road / Flight)',
@@ -184,9 +184,9 @@ class _SucessBudgetWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text(
-                formatCurrency(state.budget.totalCost),
+                formatCurrency(budget.totalCost),
                 style: context.textTheme.headlineMedium?.copyWith(
-                  fontSize: state is EstimateBudgetLoading ? 24 : 32,
+                  fontSize: 32,
                   fontWeight: FontWeight.w800,
                 ),
               ),
