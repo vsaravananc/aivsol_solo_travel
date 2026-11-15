@@ -1,7 +1,9 @@
 import 'package:aivsol_solo_travel/core/error/failures.dart';
 import 'package:aivsol_solo_travel/core/extensions/dio_extension.dart';
+import 'package:aivsol_solo_travel/core/utility/api_end_points.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+
 import '../models/weather_model.dart';
 
 abstract class WeatherRemoteDataSource {
@@ -18,8 +20,6 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
 
   WeatherRemoteDataSourceImpl({required this.dio});
 
-  static const String _endpoint = 'https://api.open-meteo.com/v1/forecast';
-
   @override
   Future<Either<Failure, WeatherModel>> getWeatherForecast({
     required double latitude,
@@ -34,7 +34,7 @@ class WeatherRemoteDataSourceImpl implements WeatherRemoteDataSource {
 
     try {
       final response = await dio.get(
-        _endpoint,
+        '${ApiEndPoints.openMeteo}forecast',
         queryParameters: {
           'latitude': latitude,
           'longitude': longitude,
