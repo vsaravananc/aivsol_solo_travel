@@ -3,9 +3,11 @@ import 'dart:io';
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:aivsol_solo_travel/core/utility/app_router.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
@@ -17,10 +19,13 @@ class AivsolSoloTravel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return MultiBlocProvider(
+      providers: [BlocProvider(create: (context) => HomeBloc())],
+      child: MaterialApp.router(
       routerConfig: AppRouter().router,
       theme: LightTheme.themeData,
       title: 'Aivsol Solo Travel',
+      ),
     );
   }
 }
