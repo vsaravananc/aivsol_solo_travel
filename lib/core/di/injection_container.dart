@@ -17,13 +17,21 @@ import '../../feature/detail/domain/usecases/save_trip_history.dart';
 import '../../feature/detail/presentation/bloc/estimate_budget_bloc.dart';
 import '../../feature/detail/presentation/bloc/save_trip_history_bloc.dart';
 import '../../feature/detail/presentation/bloc/weather_bloc.dart';
+import '../../feature/history/data/repositories/history_repository_impl.dart';
+import '../../feature/history/domain/repositories/history_repository.dart';
+import '../../feature/history/domain/usecases/get_all_trip_history.dart';
+import '../../feature/history/presentation/bloc/history_bloc.dart';
 import '../../feature/home/data/datasources/trip_geocoding_remote_data_source.dart';
+import '../../feature/home/data/repositories/recent_trips_repository_impl.dart';
 import '../../feature/home/data/repositories/trip_geocoding_repository_impl.dart';
+import '../../feature/home/domain/repositories/recent_trips_repository.dart';
 import '../../feature/home/domain/repositories/trip_geocoding_repository.dart';
 import '../../feature/home/domain/usecases/get_location_coordinates.dart';
+import '../../feature/home/domain/usecases/get_recent_trips.dart';
 import '../../feature/home/domain/usecases/resolve_trip_locations.dart';
 import '../../feature/home/presentation/bloc/home_bloc.dart';
 import '../../feature/home/presentation/bloc/location_bloc.dart';
+import '../../feature/home/presentation/bloc/recent_trips_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -121,6 +129,34 @@ Future<void> initDependencies() async {
 
   sl.registerFactory<SaveTripHistoryBloc>(
     () => SaveTripHistoryBloc(saveTripHistory: sl<SaveTripHistory>()),
+  );
+
+  sl.registerLazySingleton<RecentTripsRepository>(
+    () => RecentTripsRepositoryImpl(
+      localDataSource: sl<TripHistoryLocalDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetRecentTrips>(
+    () => GetRecentTrips(sl<RecentTripsRepository>()),
+  );
+
+  sl.registerFactory<RecentTripsBloc>(
+    () => RecentTripsBloc(getRecentTrips: sl<GetRecentTrips>()),
+  );
+
+  sl.registerLazySingleton<HistoryRepository>(
+    () => HistoryRepositoryImpl(
+      localDataSource: sl<TripHistoryLocalDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetAllTripHistory>(
+    () => GetAllTripHistory(sl<HistoryRepository>()),
+  );
+
+  sl.registerFactory<HistoryBloc>(
+    () => HistoryBloc(getAllTripHistory: sl<GetAllTripHistory>()),
   );
 
   await AppDatabase.testing();

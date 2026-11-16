@@ -8,8 +8,6 @@ import 'package:aivsol_solo_travel/feature/detail/domain/entities/weather_entity
 import 'package:aivsol_solo_travel/feature/home/domain/entities/location_entity.dart';
 
 class TripHistoryLocalDataSource {
-  // ── Write ─────────────────────────────────────────────────────────────────
-
   Future<int> saveTripHistory({
     required LocationEntity from,
     required LocationEntity to,
@@ -64,9 +62,6 @@ class TripHistoryLocalDataSource {
     return db.insert(TripHistoryTable.tableName, row);
   }
 
-  // ── Read ──────────────────────────────────────────────────────────────────
-
-  /// Returns all trip history rows, newest first, mapped to [TripHistoryEntity].
   Future<List<TripHistoryEntity>> getAllTripHistory() async {
     final db = await AppDatabase.instance;
     final rows = await db.query(
@@ -76,7 +71,6 @@ class TripHistoryLocalDataSource {
     return rows.map(_rowToEntity).toList();
   }
 
-  /// Returns the [limit] most recent trips, newest first.
   Future<List<TripHistoryEntity>> getRecentTripHistory({
     required int limit,
   }) async {
@@ -88,24 +82,6 @@ class TripHistoryLocalDataSource {
     );
     return rows.map(_rowToEntity).toList();
   }
-
-  // ── Delete ────────────────────────────────────────────────────────────────
-
-  Future<int> deleteTripHistory(int id) async {
-    final db = await AppDatabase.instance;
-    return db.delete(
-      TripHistoryTable.tableName,
-      where: '${TripHistoryTable.columnId} = ?',
-      whereArgs: [id],
-    );
-  }
-
-  Future<int> clearAll() async {
-    final db = await AppDatabase.instance;
-    return db.delete(TripHistoryTable.tableName);
-  }
-
-  // ── Mapper ────────────────────────────────────────────────────────────────
 
   TripHistoryEntity _rowToEntity(Map<String, dynamic> row) {
     final styleName = row[TripHistoryTable.columnTravelStyle] as String;

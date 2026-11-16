@@ -7,8 +7,10 @@ import 'package:aivsol_solo_travel/core/utility/app_router.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/save_trip_history_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/weather_bloc.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_bloc.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -33,6 +35,8 @@ class AivsolSoloTravel extends StatelessWidget {
         BlocProvider(create: (_) => sl<WeatherBloc>()),
         BlocProvider(create: (_) => sl<EstimateBudgetBloc>()),
         BlocProvider(create: (_) => sl<SaveTripHistoryBloc>()),
+        BlocProvider(create: (_) => sl<RecentTripsBloc>()),
+        BlocProvider(create: (_) => sl<HistoryBloc>()),
       ],
       child: MaterialApp.router(
         routerConfig: AppRouter().router,

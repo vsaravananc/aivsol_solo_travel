@@ -12,8 +12,6 @@ sealed class SaveTripHistoryEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Triggered once both budget and weather data are available on the detail
-/// screen. Carries all the data needed to persist a complete trip record.
 class SaveTripHistoryRequested extends SaveTripHistoryEvent {
   final LocationEntity from;
   final LocationEntity to;
@@ -21,8 +19,6 @@ class SaveTripHistoryRequested extends SaveTripHistoryEvent {
   final DateTime endDate;
   final TravelStyle travelStyle;
   final BudgetEntity budget;
-
-  /// Weather is optional — the trip is saved even if weather fetch failed.
   final WeatherEntity? weather;
 
   const SaveTripHistoryRequested({

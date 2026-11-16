@@ -7,13 +7,10 @@ sealed class SaveTripHistoryState extends Equatable {
   List<Object?> get props => [];
 }
 
-/// Initial state — no insert has been attempted yet.
 class TripHistoryNotSaved extends SaveTripHistoryState {
   const TripHistoryNotSaved();
 }
 
-/// The trip was successfully persisted. [savedId] is the auto-incremented
-/// primary key of the new row.
 class TripHistorySaved extends SaveTripHistoryState {
   final int savedId;
 
@@ -23,7 +20,6 @@ class TripHistorySaved extends SaveTripHistoryState {
   List<Object?> get props => [savedId];
 }
 
-/// The insert was attempted but failed. [errorMessage] describes the cause.
 class TripHistorySaveFailed extends SaveTripHistoryState {
   final String errorMessage;
 

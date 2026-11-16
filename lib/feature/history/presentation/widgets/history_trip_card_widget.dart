@@ -1,29 +1,14 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:aivsol_solo_travel/core/utility/app_router.dart';
+import 'package:aivsol_solo_travel/feature/detail/domain/entities/trip_history_entity.dart';
+import 'package:aivsol_solo_travel/feature/home/domain/entities/location_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-
-class TripHistoryItem {
-  final String from;
-  final String to;
-  final int days;
-  final double estimatedCost;
-  final String dateRange;
-  final String travelStyle;
-
-  const TripHistoryItem({
-    required this.from,
-    required this.to,
-    required this.days,
-    required this.estimatedCost,
-    required this.dateRange,
-    required this.travelStyle,
-  });
-}
+import 'package:intl/intl.dart';
 
 class HistoryTripCardWidget extends StatelessWidget {
-  final TripHistoryItem trip;
+  final TripHistoryEntity trip;
 
   const HistoryTripCardWidget({
     super.key,
@@ -33,22 +18,35 @@ class HistoryTripCardWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final costFormatted =
-        '₹${trip.estimatedCost.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}';
+        '₹${trip.totalCost.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]},')}';
 
     return GestureDetector(
       onTap: () {
+        final dateFormatter = DateFormat('MMM d');
+        final dateRange =
+            '${dateFormatter.format(trip.startDate)} – ${dateFormatter.format(trip.endDate)}';
+
         context.push(
           AppRouter.detailRoute,
           extra: {
-            'from': trip.from,
-            'to': trip.to,
-            'fromCode': trip.from.length >= 3
-                ? trip.from.substring(0, 3).toUpperCase()
-                : trip.from.toUpperCase(),
-            'toPlace': trip.to,
-            'dateRange': trip.dateRange,
-            'days': trip.days,
-            'travelStyle': trip.travelStyle,
+            'from': trip.fromLocation,
+            'to': trip.toLocation,
+            'toPlace': trip.toLocation,
+            'dateRange': dateRange,
+            'days': trip.tripDays,
+            'travelStyleEnum': trip.travelStyle,
+            'fromLocation': LocationEntity(
+              name: trip.fromLocation,
+              latitude: trip.fromLat,
+              longitude: trip.fromLong,
+            ),
+            'destinationLocation': LocationEntity(
+              name: trip.toLocation,
+              latitude: trip.toLat,
+              longitude: trip.toLong,
+            ),
+            'startDate': trip.startDate,
+            'endDate': trip.endDate,
           },
         );
       },
@@ -76,7 +74,7 @@ class HistoryTripCardWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${trip.from}  →  ${trip.to}',
+                    '${trip.fromLocation}  →  ${trip.toLocation}',
                     style: context.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -87,7 +85,7 @@ class HistoryTripCardWidget extends StatelessWidget {
                   Row(
                     children: [
                       Text(
-                        '${trip.days} Days',
+                        '${trip.tripDays} Days',
                         style: context.textTheme.bodyMedium,
                       ),
                       const Padding(

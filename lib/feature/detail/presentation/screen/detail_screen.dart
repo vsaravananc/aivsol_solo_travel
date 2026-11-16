@@ -14,9 +14,13 @@ import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_bu
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_header_widget.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_share_sheet_widget.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/widgets/detail_weather_section_widget.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_bloc.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_event.dart';
 import 'package:aivsol_solo_travel/feature/home/domain/entities/location_entity.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_bloc.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_event.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -108,9 +112,10 @@ class _DetailScreenState extends State<DetailScreen> {
   Widget build(BuildContext context) {
     return BlocListener<SaveTripHistoryBloc, SaveTripHistoryState>(
       listener: (context, state) {
-        print('-' * 90);
-        print('state of trigger');
-        print('-' * 90);
+        if (state is TripHistorySaved) {
+          context.read<RecentTripsBloc>().add(const FetchRecentTripsEvent());
+          context.read<HistoryBloc>().add(const FetchAllTripHistoryEvent());
+        }
       },
       child: BlocListener<EstimateBudgetBloc, EstimateBudgetState>(
         listener: (context, budgetState) {

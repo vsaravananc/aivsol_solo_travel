@@ -1,106 +1,26 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_bloc.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_event.dart';
+import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_state.dart';
 import 'package:aivsol_solo_travel/feature/history/presentation/widgets/history_trip_card_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-const List<TripHistoryItem> _historyTrips = [
-  TripHistoryItem(
-    from: 'Mumbai',
-    to: 'Goa',
-    days: 3,
-    estimatedCost: 8400,
-    dateRange: 'Nov 14 – Nov 18',
-    travelStyle: 'Standard Style',
-  ),
-   TripHistoryItem(
-    from: 'Mumbai',
-    to: 'Goa',
-    days: 3,
-    estimatedCost: 8400,
-    dateRange: 'Nov 14 – Nov 18',
-    travelStyle: 'Standard Style',
-  ), TripHistoryItem(
-    from: 'Mumbai',
-    to: 'Goa',
-    days: 3,
-    estimatedCost: 8400,
-    dateRange: 'Nov 14 – Nov 18',
-    travelStyle: 'Standard Style',
-  ), TripHistoryItem(
-    from: 'Mumbai',
-    to: 'Goa',
-    days: 3,
-    estimatedCost: 8400,
-    dateRange: 'Nov 14 – Nov 18',
-    travelStyle: 'Standard Style',
-  ), TripHistoryItem(
-    from: 'Mumbai',
-    to: 'Goa',
-    days: 3,
-    estimatedCost: 8400,
-    dateRange: 'Nov 14 – Nov 18',
-    travelStyle: 'Standard Style',
-  ),
-  TripHistoryItem(
-    from: 'Kochi',
-    to: 'Munnar',
-    days: 2,
-    estimatedCost: 5200,
-    dateRange: 'Nov 20 – Nov 22',
-    travelStyle: 'Budget Style',
-  ),
-  TripHistoryItem(
-    from: 'Bengaluru',
-    to: 'Varkala',
-    days: 4,
-    estimatedCost: 12500,
-    dateRange: 'Dec 01 – Dec 05',
-    travelStyle: 'Comfort Style',
-  ),
-  TripHistoryItem(
-    from: 'Delhi',
-    to: 'Manali',
-    days: 5,
-    estimatedCost: 15800,
-    dateRange: 'Dec 10 – Dec 15',
-    travelStyle: 'Standard Style',
-  ),
-  TripHistoryItem(
-    from: 'Chennai',
-    to: 'Pondicherry',
-    days: 2,
-    estimatedCost: 4600,
-    dateRange: 'Dec 18 – Dec 20',
-    travelStyle: 'Budget Style',
-  ),
-  TripHistoryItem(
-    from: 'Jaipur',
-    to: 'Udaipur',
-    days: 3,
-    estimatedCost: 9200,
-    dateRange: 'Dec 24 – Dec 27',
-    travelStyle: 'Comfort Style',
-  ),
-  TripHistoryItem(
-    from: 'Kolkata',
-    to: 'Darjeeling',
-    days: 4,
-    estimatedCost: 11000,
-    dateRange: 'Jan 05 – Jan 09',
-    travelStyle: 'Standard Style',
-  ),
-  TripHistoryItem(
-    from: 'Hyderabad',
-    to: 'Hampi',
-    days: 3,
-    estimatedCost: 7800,
-    dateRange: 'Jan 15 – Jan 18',
-    travelStyle: 'Budget Style',
-  ),
-];
-
-class HistoryRecentSearchTrips extends StatelessWidget {
+class HistoryRecentSearchTrips extends StatefulWidget {
   const HistoryRecentSearchTrips({super.key});
+
+  @override
+  State<HistoryRecentSearchTrips> createState() =>
+      _HistoryRecentSearchTripsState();
+}
+
+class _HistoryRecentSearchTripsState extends State<HistoryRecentSearchTrips> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<HistoryBloc>().add(const FetchAllTripHistoryEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -112,25 +32,58 @@ class HistoryRecentSearchTrips extends StatelessWidget {
         ),
         title: const Text('Recent Searches'),
       ),
-      body:  _HistoryTripListWidget(trips: _historyTrips),
-    );
-  }
-}
+      body: BlocBuilder<HistoryBloc, HistoryState>(
+        builder: (context, state) {
+          if (state is HistoryLoading || state is HistoryInitial) {
+            return const Center(child: CircularProgressIndicator.adaptive());
+          }
 
-class _HistoryTripListWidget extends StatelessWidget {
-  final List<TripHistoryItem> trips;
+          if (state is HistoryFailure) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Text(
+                  state.errorMessage,
+                  style: context.textTheme.bodyMedium?.copyWith(
+                    color: Colors.red.shade400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            );
+          }
 
-  const _HistoryTripListWidget({required this.trips});
+          if (state is HistoryLoaded) {
+            if (state.trips.isEmpty) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Text(
+                    'No trip history found.',
+                    style: context.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              );
+            }
 
-  @override
-  Widget build(BuildContext context) {
-    return ListView.separated(
-      shrinkWrap: true,
-      itemCount: trips.length,
-      padding: const .only(left: 12,right: 12,top: 12,bottom: 50),
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
-      itemBuilder: (context, index) => HistoryTripCardWidget(
-        trip: trips[index],
+            return ListView.separated(
+              itemCount: state.trips.length,
+              padding: const EdgeInsets.only(
+                left: 12,
+                right: 12,
+                top: 12,
+                bottom: 50,
+              ),
+              separatorBuilder: (_, _) => const SizedBox(height: 10),
+              itemBuilder: (context, index) =>
+                  HistoryTripCardWidget(trip: state.trips[index]),
+            );
+          }
+
+          return const SizedBox.shrink();
+        },
       ),
     );
   }

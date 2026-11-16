@@ -28,3 +28,7 @@ class ParsingFailure extends Failure {
 class FormateFailure extends Failure {
   const FormateFailure([super.message = 'Invalid data received. Please try again.']);
 }
+
+class DatabaseFailure extends Failure {
+  const DatabaseFailure([super.message = 'Database error occurred.']);
+}

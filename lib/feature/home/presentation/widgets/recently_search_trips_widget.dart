@@ -2,30 +2,27 @@ import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:aivsol_solo_travel/core/utility/app_router.dart';
 import 'package:aivsol_solo_travel/core/widgets/trip_card_widget.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_bloc.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_event.dart';
+import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_state.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-class RecentTrip {
-  final String from;
-  final String to;
-  final int days;
-  final double estimatedCost;
+class RecentlySearchTripsWidget extends StatefulWidget {
+  const RecentlySearchTripsWidget({super.key});
 
-  const RecentTrip({
-    required this.from,
-    required this.to,
-    required this.days,
-    required this.estimatedCost,
-  });
+  @override
+  State<RecentlySearchTripsWidget> createState() =>
+      _RecentlySearchTripsWidgetState();
 }
 
-const _dummyTrips = [
-  RecentTrip(from: 'Mumbai', to: 'Goa', days: 3, estimatedCost: 8400),
-  RecentTrip(from: 'Kochi', to: 'Munnar', days: 2, estimatedCost: 5200),
-];
-
-class RecentlySearchTripsWidget extends StatelessWidget {
-  const RecentlySearchTripsWidget({super.key});
+class _RecentlySearchTripsWidgetState extends State<RecentlySearchTripsWidget> {
+  @override
+  void initState() {
+    super.initState();
+    context.read<RecentTripsBloc>().add(const FetchRecentTripsEvent(limit: 3));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +55,70 @@ class RecentlySearchTripsWidget extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _dummyTrips.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
-            itemBuilder: (context, index) =>
-                TripCard(trip: _dummyTrips[index]),
+          BlocBuilder<RecentTripsBloc, RecentTripsState>(
+            builder: (context, state) {
+              if (state is RecentTripsLoading || state is RecentTripsInitial) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24.0),
+                    child: CircularProgressIndicator.adaptive(),
+                  ),
+                );
+              }
+
+              if (state is RecentTripsFailure) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
+                  child: Center(
+                    child: Text(
+                      state.errorMessage,
+                      style: context.textTheme.bodyMedium?.copyWith(
+                        color: Colors.red.shade400,
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              if (state is RecentTripsLoaded) {
+                if (state.trips.isEmpty) {
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 20,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.themeData.scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: context.themeData.disabledColor.withAlpha(12),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'No recently searched trips yet.',
+                        style: context.textTheme.bodyMedium?.copyWith(
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: state.trips.length,
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
+                  itemBuilder: (context, index) =>
+                      TripCard(trip: state.trips[index]),
+                );
+              }
+
+              return const SizedBox.shrink();
+            },
           ),
         ],
       ),
