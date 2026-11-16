@@ -26,6 +26,7 @@ class DateSelectWidget extends StatelessWidget {
       lastDate: lastSelectableDate,
       initialDateRange: DateTimeRange(start: currentStart, end: currentEnd),
       initialEntryMode: DatePickerEntryMode.calendarOnly,
+
       builder: (context, child) {
         return SafeArea(
           bottom: false,
@@ -47,6 +48,20 @@ class DateSelectWidget extends StatelessWidget {
     );
 
     if (picked == null || !context.mounted) return;
+    final days = picked.end.difference(picked.start).inDays + 1;
+
+    if (days > 15) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text(
+            'Your itinerary cannot exceed 15 days. Please select a shorter date range',
+          ),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     context.read<HomeBloc>().add(
       DateRangeChangedEvent(startDate: picked.start, endDate: picked.end),
