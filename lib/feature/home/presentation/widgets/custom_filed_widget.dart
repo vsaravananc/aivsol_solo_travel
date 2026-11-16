@@ -1,5 +1,6 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class CustomFieldWidget extends StatelessWidget {
   final String label;
@@ -43,6 +44,17 @@ class CustomFieldWidget extends StatelessWidget {
           onTapUpOutside: (_) {
             focusNode?.unfocus();
           },
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z]')),
+            TextInputFormatter.withFunction((old, current) {
+              return current.copyWith(
+                text:
+                    current.text[0].toUpperCase() +
+                    current.text.substring(1).toLowerCase(),
+                selection: current.selection,
+              );
+            }),
+          ],
           style: context.textTheme.titleMedium?.copyWith(fontWeight: .w600),
           decoration: InputDecoration(hintText: hintText),
         ),
