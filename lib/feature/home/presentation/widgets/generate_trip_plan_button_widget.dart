@@ -1,4 +1,6 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/save_trip_history_bloc.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/save_trip_history_event.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_event.dart';
@@ -40,6 +42,9 @@ class GenerateTripPlanButtonWidget extends StatelessWidget {
         ),
         onPressed: isEnabled
             ? () {
+                context.read<SaveTripHistoryBloc>().add(
+                  const RestartSaveTripHistoryEvent(),
+                );
                 context.read<LocationBloc>().add(
                   ResolveTripLocationsEvent(
                     fromCity: context.read<HomeBloc>().state.from!,
