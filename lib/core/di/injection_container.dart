@@ -13,6 +13,7 @@ import '../../feature/detail/domain/repositories/weather_repository.dart';
 import '../../feature/detail/domain/usecases/calculate_budget.dart';
 import '../../feature/detail/domain/usecases/get_route_distance.dart';
 import '../../feature/detail/domain/usecases/get_weather_forecast.dart';
+import '../../feature/detail/domain/usecases/get_trip_history_by_id.dart';
 import '../../feature/detail/domain/usecases/save_trip_history.dart';
 import '../../feature/detail/presentation/bloc/estimate_budget_bloc.dart';
 import '../../feature/detail/presentation/bloc/save_trip_history_bloc.dart';
@@ -60,6 +61,10 @@ Future<void> initDependencies() async {
 
   sl.registerLazySingleton<SaveTripHistory>(
     () => SaveTripHistory(sl<TripHistoryRepository>()),
+  );
+
+  sl.registerLazySingleton<GetTripHistoryById>(
+    () => GetTripHistoryById(sl<TripHistoryRepository>()),
   );
 
   sl.registerLazySingleton<TripGeocodingRemoteDataSource>(

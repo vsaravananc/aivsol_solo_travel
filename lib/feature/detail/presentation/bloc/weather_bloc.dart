@@ -10,6 +10,23 @@ class WeatherBloc extends Bloc<WeatherEvent, WeatherState> {
   WeatherBloc({required this.getWeatherForecast})
     : super(const WeatherInitial()) {
     on<FetchWeatherEvent>(_onFetchWeather);
+    on<LoadLocalWeatherEvent>(_onLoadLocalWeather);
+  }
+
+  void _onLoadLocalWeather(
+    LoadLocalWeatherEvent event,
+    Emitter<WeatherState> emit,
+  ) {
+    if (event.weather != null) {
+      emit(
+        WeatherSuccess(
+          weather: event.weather!,
+          totalTripDays: event.totalTripDays,
+        ),
+      );
+    } else {
+      emit(const WeatherFailure('No weather data saved for this trip.'));
+    }
   }
 
   Future<void> _onFetchWeather(

@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/enums/travel_style.dart';
 import '../../domain/entities/budget_entity.dart';
+import '../../domain/entities/trip_history_entity.dart';
 import '../../domain/entities/weather_entity.dart';
 import '../../domain/repositories/trip_history_repository.dart';
 import '../../../home/domain/entities/location_entity.dart';
@@ -36,6 +37,16 @@ class TripHistoryRepositoryImpl implements TripHistoryRepository {
       return Right(rowId);
     } catch (e) {
       return const Left(ServerFailure('Failed to save trip history locally.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, TripHistoryEntity?>> getTripHistoryById(int id) async {
+    try {
+      final trip = await localDataSource.getTripHistoryById(id);
+      return Right(trip);
+    } catch (e) {
+      return const Left(DatabaseFailure('Failed to load trip history from local database.'));
     }
   }
 }

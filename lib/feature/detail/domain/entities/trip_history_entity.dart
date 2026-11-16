@@ -1,5 +1,11 @@
+import 'dart:convert';
 import 'package:equatable/equatable.dart';
+
 import '../../../../core/enums/travel_style.dart';
+import 'budget_entity.dart';
+import 'current_weather_entity.dart';
+import 'daily_weather_entity.dart';
+import 'weather_entity.dart';
 
 class TripHistoryEntity extends Equatable {
   final int id;
@@ -24,6 +30,7 @@ class TripHistoryEntity extends Equatable {
   final double? weatherTemperature;
   final int? weatherHumidity;
   final int? weatherCode;
+  final String? dailyWeatherJson;
 
   const TripHistoryEntity({
     required this.id,
@@ -48,7 +55,50 @@ class TripHistoryEntity extends Equatable {
     this.weatherTemperature,
     this.weatherHumidity,
     this.weatherCode,
+    this.dailyWeatherJson,
   });
+
+  BudgetEntity get toBudgetEntity => BudgetEntity(
+        travelCost: travelCost,
+        hotelCost: hotelCost,
+        foodCost: foodCost,
+        localTransportCost: localTransportCost,
+        totalCost: totalCost,
+        distanceInKm: distanceKm,
+        tripDays: tripDays,
+        hotelNights: hotelNights,
+      );
+
+  WeatherEntity? get toWeatherEntity {
+    if (weatherTemperature == null) return null;
+
+    final currentWeather = CurrentWeatherEntity(
+      temperature: weatherTemperature!,
+      relativeHumidity: weatherHumidity ?? 0,
+      weatherCode: weatherCode ?? 0,
+    );
+
+    List<DailyWeatherEntity> dailyList = [];
+    if (dailyWeatherJson != null && dailyWeatherJson!.isNotEmpty) {
+      try {
+        final decoded = json.decode(dailyWeatherJson!) as List;
+        dailyList = decoded.map((item) {
+          final map = item as Map<String, dynamic>;
+          return DailyWeatherEntity(
+            date: DateTime.parse(map['date'] as String),
+            weatherCode: map['weatherCode'] as int,
+            maxTemperature: (map['maxTemperature'] as num).toDouble(),
+            minTemperature: (map['minTemperature'] as num).toDouble(),
+          );
+        }).toList();
+      } catch (_) {}
+    }
+
+    return WeatherEntity(
+      currentWeather: currentWeather,
+      dailyWeather: dailyList,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -74,5 +124,6 @@ class TripHistoryEntity extends Equatable {
         weatherTemperature,
         weatherHumidity,
         weatherCode,
+        dailyWeatherJson,
       ];
 }

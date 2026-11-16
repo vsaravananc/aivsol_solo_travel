@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:aivsol_solo_travel/core/database/app_database.dart';
 import 'package:aivsol_solo_travel/core/database/table/trip_history_table.dart';
 import 'package:aivsol_solo_travel/core/enums/travel_style.dart';
@@ -83,6 +84,18 @@ class TripHistoryLocalDataSource {
     return rows.map(_rowToEntity).toList();
   }
 
+  Future<TripHistoryEntity?> getTripHistoryById(int id) async {
+    final db = await AppDatabase.instance;
+    final rows = await db.query(
+      TripHistoryTable.tableName,
+      where: '${TripHistoryTable.columnId} = ?',
+      whereArgs: [id],
+      limit: 1,
+    );
+    if (rows.isEmpty) return null;
+    return _rowToEntity(rows.first);
+  }
+
   TripHistoryEntity _rowToEntity(Map<String, dynamic> row) {
     final styleName = row[TripHistoryTable.columnTravelStyle] as String;
     final travelStyle = TravelStyle.values.firstWhere(
@@ -104,9 +117,7 @@ class TripHistoryLocalDataSource {
       startDate: DateTime.parse(
         row[TripHistoryTable.columnStartDate] as String,
       ),
-      endDate: DateTime.parse(
-        row[TripHistoryTable.columnEndDate] as String,
-      ),
+      endDate: DateTime.parse(row[TripHistoryTable.columnEndDate] as String),
       travelStyle: travelStyle,
       travelCost: (row[TripHistoryTable.columnTravelCost] as num).toDouble(),
       hotelCost: (row[TripHistoryTable.columnHotelCost] as num).toDouble(),
@@ -121,6 +132,7 @@ class TripHistoryLocalDataSource {
           (row[TripHistoryTable.columnWeatherTemperature] as num?)?.toDouble(),
       weatherHumidity: row[TripHistoryTable.columnWeatherHumidity] as int?,
       weatherCode: row[TripHistoryTable.columnWeatherCode] as int?,
+      dailyWeatherJson: row[TripHistoryTable.columnDailyWeatherJson] as String?,
     );
   }
 }

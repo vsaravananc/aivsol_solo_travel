@@ -29,6 +29,8 @@ class HistoryTripCardWidget extends StatelessWidget {
         context.push(
           AppRouter.detailRoute,
           extra: {
+            'id': trip.id,
+            'useLocalData': true,
             'from': trip.fromLocation,
             'to': trip.toLocation,
             'toPlace': trip.toLocation,

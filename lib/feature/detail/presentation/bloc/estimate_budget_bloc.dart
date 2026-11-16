@@ -15,6 +15,32 @@ class EstimateBudgetBloc
     required this.calculateBudget,
   }) : super(const EstimateBudgetInitial()) {
     on<EstimateBudgetCalculationEvent>(_onEstimateBudgetCalculation);
+    on<LoadLocalBudgetEvent>(_onLoadLocalBudget);
+  }
+
+  @override
+  void onTransition(
+    Transition<EstimateBudgetEvent, EstimateBudgetState> transition,
+  ) {
+    print('*' * 50);
+    print(transition.toString().replaceAll(',', '\n'));
+    print('*' * 50);
+    super.onTransition(transition);
+  }
+
+  void _onLoadLocalBudget(
+    LoadLocalBudgetEvent event,
+    Emitter<EstimateBudgetState> emit,
+  ) {
+    emit(
+      EstimateBudgetSuccess(
+        budget: event.budget,
+        cachedDistanceInKm: event.budget.distanceInKm,
+        tripDays: event.budget.tripDays,
+        hotelNights: event.budget.hotelNights,
+        currentStyle: event.travelStyle,
+      ),
+    );
   }
 
   Future<void> _onEstimateBudgetCalculation(

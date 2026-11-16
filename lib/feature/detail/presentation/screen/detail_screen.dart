@@ -1,6 +1,8 @@
+import 'package:aivsol_solo_travel/core/di/injection_container.dart';
 import 'package:aivsol_solo_travel/core/enums/travel_style.dart';
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
+import 'package:aivsol_solo_travel/feature/detail/domain/usecases/get_trip_history_by_id.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_event.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/estimate_budget_state.dart';
@@ -27,6 +29,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class DetailScreen extends StatefulWidget {
+  final int? id;
+  final bool useLocalData;
   final String from;
   final String to;
   final String toPlace;
@@ -40,6 +44,8 @@ class DetailScreen extends StatefulWidget {
 
   const DetailScreen({
     super.key,
+    this.id,
+    this.useLocalData = false,
     required this.from,
     required this.to,
     required this.toPlace,
@@ -60,8 +66,46 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchWeather();
-    _estimateBudget();
+    if (widget.useLocalData && widget.id != null) {
+      _loadFromLocalDatabase(widget.id!);
+    } else {
+      _fetchWeather();
+      _estimateBudget();
+    }
+  }
+
+  Future<void> _loadFromLocalDatabase(int id) async {
+    final getTripHistoryById = sl<GetTripHistoryById>();
+    final result = await getTripHistoryById(id);
+
+    result.fold(
+      (failure) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(failure.message),
+              backgroundColor: Colors.red.shade700,
+            ),
+          );
+        }
+      },
+      (trip) {
+        if (trip != null && mounted) {
+          context.read<EstimateBudgetBloc>().add(
+            LoadLocalBudgetEvent(
+              budget: trip.toBudgetEntity,
+              travelStyle: trip.travelStyle,
+            ),
+          );
+          context.read<WeatherBloc>().add(
+            LoadLocalWeatherEvent(
+              weather: trip.toWeatherEntity,
+              totalTripDays: trip.tripDays,
+            ),
+          );
+        }
+      },
+    );
   }
 
   void _fetchWeather() {
@@ -90,6 +134,8 @@ class _DetailScreenState extends State<DetailScreen> {
     required EstimateBudgetState budgetState,
     required WeatherState weatherState,
   }) {
+    context.read<HomeBloc>().add(const RevertSelectedEvent());
+    if (widget.useLocalData) return;
     if (budgetState is! EstimateBudgetSuccess) return;
 
     final saveState = context.read<SaveTripHistoryBloc>().state;
@@ -117,81 +163,78 @@ class _DetailScreenState extends State<DetailScreen> {
           context.read<HistoryBloc>().add(const FetchAllTripHistoryEvent());
         }
       },
-      child: BlocListener<EstimateBudgetBloc, EstimateBudgetState>(
-        listener: (context, budgetState) {
+      child: BlocListener<WeatherBloc, WeatherState>(
+        listener: (context, weatherState) {
           _trySaveTripHistory(
-            budgetState: budgetState,
-            weatherState: context.read<WeatherBloc>().state,
+            budgetState: context.read<EstimateBudgetBloc>().state,
+            weatherState: weatherState,
           );
         },
-        child: BlocListener<WeatherBloc, WeatherState>(
-          listener: (context, weatherState) {
-            print('state weater');
-            _trySaveTripHistory(
-              budgetState: context.read<EstimateBudgetBloc>().state,
-              weatherState: weatherState,
-            );
-          },
-          child: Scaffold(
-            appBar: AppBar(
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded),
-                onPressed: () {
-                  context.read<HomeBloc>().add(const RevertSelectedEvent());
-                  context.pop();
-                },
-              ),
-              title: const Text('Trip Detail'),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: GestureDetector(
-                    onTap: () => DetailShareSheetWidget.show(
-                      context,
-                      from: widget.from,
-                      to: widget.to,
-                      dateRange: widget.dateRange,
-                      days: widget.days,
-                      travelStyle: widget.travelStyleEnum.name,
-                      endDate: widget.endDate,
-                      startDate: widget.startDate,
-                    ),
-                    child: Container(
-                      width: 38,
-                      height: 38,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        CupertinoIcons.share,
-                        color: context.themeData.scaffoldBackgroundColor,
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+        child: Scaffold(
+          appBar: AppBar(
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded),
+              onPressed: () {
+                context.read<HomeBloc>().add(const RevertSelectedEvent());
+                context.pop();
+              },
             ),
-            body: SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  DetailHeaderWidget(
+            title: const Text('Trip Detail'),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: GestureDetector(
+                  onTap: () => DetailShareSheetWidget.show(
+                    context,
                     from: widget.from,
                     to: widget.to,
                     dateRange: widget.dateRange,
                     days: widget.days,
                     travelStyle: widget.travelStyleEnum.name,
+                    endDate: widget.endDate,
+                    startDate: widget.startDate,
                   ),
-                  DetailBudgetSectionWidget(onRetry: _estimateBudget),
-                  DetailWeatherSectionWidget(
-                    cityName: widget.toPlace,
-                    onRetry: _fetchWeather,
+                  child: Container(
+                    width: 38,
+                    height: 38,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      CupertinoIcons.share,
+                      color: context.themeData.scaffoldBackgroundColor,
+                      size: 20,
+                    ),
                   ),
-                ],
+                ),
               ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DetailHeaderWidget(
+                  from: widget.from,
+                  to: widget.to,
+                  dateRange: widget.dateRange,
+                  days: widget.days,
+                  travelStyle: widget.travelStyleEnum.name,
+                ),
+                DetailBudgetSectionWidget(
+                  onRetry: widget.useLocalData && widget.id != null
+                      ? () => _loadFromLocalDatabase(widget.id!)
+                      : _estimateBudget,
+                ),
+                DetailWeatherSectionWidget(
+                  cityName: widget.toPlace,
+                  onRetry: widget.useLocalData && widget.id != null
+                      ? () => _loadFromLocalDatabase(widget.id!)
+                      : _fetchWeather,
+                ),
+              ],
             ),
           ),
         ),

@@ -12,6 +12,10 @@ sealed class SaveTripHistoryEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class RestartSaveTripHistoryEvent extends SaveTripHistoryEvent {
+  const RestartSaveTripHistoryEvent();
+}
+
 class SaveTripHistoryRequested extends SaveTripHistoryEvent {
   final LocationEntity from;
   final LocationEntity to;
@@ -33,12 +37,12 @@ class SaveTripHistoryRequested extends SaveTripHistoryEvent {
 
   @override
   List<Object?> get props => [
-        from,
-        to,
-        startDate,
-        endDate,
-        travelStyle,
-        budget,
-        weather,
-      ];
+    from,
+    to,
+    startDate,
+    endDate,
+    travelStyle,
+    budget,
+    weather,
+  ];
 }

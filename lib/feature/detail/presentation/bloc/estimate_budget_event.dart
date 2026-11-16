@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../../../core/enums/travel_style.dart';
 import '../../../home/domain/entities/location_entity.dart';
+import '../../domain/entities/budget_entity.dart';
 
 sealed class EstimateBudgetEvent extends Equatable {
   const EstimateBudgetEvent();
@@ -27,10 +28,23 @@ class EstimateBudgetCalculationEvent extends EstimateBudgetEvent {
 
   @override
   List<Object?> get props => [
-    fromLocation,
-    toLocation,
-    startDate,
-    endDate,
-    travelStyle,
-  ];
+        fromLocation,
+        toLocation,
+        startDate,
+        endDate,
+        travelStyle,
+      ];
+}
+
+class LoadLocalBudgetEvent extends EstimateBudgetEvent {
+  final BudgetEntity budget;
+  final TravelStyle travelStyle;
+
+  const LoadLocalBudgetEvent({
+    required this.budget,
+    required this.travelStyle,
+  });
+
+  @override
+  List<Object?> get props => [budget, travelStyle];
 }

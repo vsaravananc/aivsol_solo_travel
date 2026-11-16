@@ -11,6 +11,7 @@ class SaveTripHistoryBloc
   SaveTripHistoryBloc({required this.saveTripHistory})
     : super(const TripHistoryNotSaved()) {
     on<SaveTripHistoryRequested>(_onSaveTripHistoryRequested);
+    on<RestartSaveTripHistoryEvent>(_onRestartSaveTripHistoryEvent);
   }
 
   @override
@@ -41,5 +42,12 @@ class SaveTripHistoryBloc
       (failure) => emit(TripHistorySaveFailed(failure.message)),
       (rowId) => emit(TripHistorySaved(rowId)),
     );
+  }
+
+  Future<void> _onRestartSaveTripHistoryEvent(
+    RestartSaveTripHistoryEvent event,
+    Emitter<SaveTripHistoryState> emit,
+  ) async {
+    emit(const TripHistoryNotSaved());
   }
 }

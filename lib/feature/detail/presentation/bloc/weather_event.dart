@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../../../home/domain/entities/location_entity.dart';
+import '../../domain/entities/weather_entity.dart';
 
 sealed class WeatherEvent extends Equatable {
   const WeatherEvent();
@@ -22,4 +23,17 @@ class FetchWeatherEvent extends WeatherEvent {
 
   @override
   List<Object?> get props => [destinationLocation, startDate, endDate];
+}
+
+class LoadLocalWeatherEvent extends WeatherEvent {
+  final WeatherEntity? weather;
+  final int totalTripDays;
+
+  const LoadLocalWeatherEvent({
+    required this.weather,
+    required this.totalTripDays,
+  });
+
+  @override
+  List<Object?> get props => [weather, totalTripDays];
 }

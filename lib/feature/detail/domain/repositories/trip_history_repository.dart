@@ -3,11 +3,11 @@ import 'package:dartz/dartz.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/enums/travel_style.dart';
 import '../entities/budget_entity.dart';
+import '../entities/trip_history_entity.dart';
 import '../entities/weather_entity.dart';
 import '../../../home/domain/entities/location_entity.dart';
 
 abstract class TripHistoryRepository {
-  
   Future<Either<Failure, int>> saveTripHistory({
     required LocationEntity from,
     required LocationEntity to,
@@ -17,4 +17,6 @@ abstract class TripHistoryRepository {
     required BudgetEntity budget,
     WeatherEntity? weather,
   });
+
+  Future<Either<Failure, TripHistoryEntity?>> getTripHistoryById(int id);
 }

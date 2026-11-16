@@ -59,10 +59,11 @@ class _HistoryRecentSearchTripsState extends State<HistoryRecentSearchTrips> {
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Text(
-                    'No trip history found.',
+                    'Your trip history will be saved automatically. Just generate your first trip to get started!',
                     style: context.textTheme.bodyMedium?.copyWith(
                       color: AppColors.textSecondary,
                     ),
+                    textAlign: .center,
                   ),
                 ),
               );
