@@ -34,6 +34,13 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         title: const Text('Solo Travler'),
+        actions: [
+          IconButton(
+            tooltip: 'Open Map',
+            icon: const Icon(CupertinoIcons.map),
+            onPressed: () => context.push(AppRouter.mapRoute),
+          ),
+        ],
       ),
       body: BlocListener<LocationBloc, LocationState>(
         listener: (context, state) {

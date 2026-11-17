@@ -1,6 +1,10 @@
-import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
-import 'package:aivsol_solo_travel/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../../../core/extensions/theme_extensions.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../home/domain/entities/location_entity.dart';
+import 'route_map_widget.dart';
 
 class DetailHeaderWidget extends StatelessWidget {
   final String from;
@@ -8,6 +12,8 @@ class DetailHeaderWidget extends StatelessWidget {
   final String dateRange;
   final int days;
   final String travelStyle;
+  final LocationEntity fromLocation;
+  final LocationEntity destinationLocation;
 
   const DetailHeaderWidget({
     super.key,
@@ -16,22 +22,33 @@ class DetailHeaderWidget extends StatelessWidget {
     required this.dateRange,
     required this.days,
     required this.travelStyle,
+    required this.fromLocation,
+    required this.destinationLocation,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: .center,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(width: .infinity),
+        RouteMapWidget(
+          fromName: from,
+          toName: to,
+          fromLocation: LatLng(fromLocation.latitude, fromLocation.longitude),
+          destinationLocation: LatLng(
+            destinationLocation.latitude,
+            destinationLocation.longitude,
+          ),
+        ),
+        const SizedBox(height: 16),
         Text(
           '$from  →  $to',
           style: context.textTheme.headlineMedium?.copyWith(
-            fontWeight: .w700,
+            fontWeight: FontWeight.w700,
           ),
         ),
+        const SizedBox(height: 4),
         Row(
-          mainAxisAlignment: .center,
           children: [
             const Icon(
               Icons.calendar_today_outlined,
@@ -45,6 +62,7 @@ class DetailHeaderWidget extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: 12),
       ],
     );
   }

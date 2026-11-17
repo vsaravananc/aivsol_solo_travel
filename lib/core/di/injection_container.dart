@@ -33,6 +33,12 @@ import '../../feature/home/domain/usecases/resolve_trip_locations.dart';
 import '../../feature/home/presentation/bloc/home_bloc.dart';
 import '../../feature/home/presentation/bloc/location_bloc.dart';
 import '../../feature/home/presentation/bloc/recent_trips_bloc.dart';
+import '../../feature/map/presentation/bloc/map_bloc.dart';
+import '../../feature/detail/data/datasources/route_map_remote_data_source.dart';
+import '../../feature/detail/data/repositories/route_map_repository_impl.dart';
+import '../../feature/detail/domain/repositories/route_map_repository.dart';
+import '../../feature/detail/domain/usecases/get_route_map_usecase.dart';
+import '../../feature/detail/presentation/bloc/route_map_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -162,6 +168,26 @@ Future<void> initDependencies() async {
 
   sl.registerFactory<HistoryBloc>(
     () => HistoryBloc(getAllTripHistory: sl<GetAllTripHistory>()),
+  );
+
+  sl.registerFactory<MapBloc>(() => MapBloc());
+
+  sl.registerLazySingleton<RouteMapRemoteDataSource>(
+    () => RouteMapRemoteDataSourceImpl(dio: sl<Dio>()),
+  );
+
+  sl.registerLazySingleton<RouteMapRepository>(
+    () => RouteMapRepositoryImpl(
+      remoteDataSource: sl<RouteMapRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<GetRouteMapUseCase>(
+    () => GetRouteMapUseCase(sl<RouteMapRepository>()),
+  );
+
+  sl.registerFactory<RouteMapBloc>(
+    () => RouteMapBloc(getRouteMapUseCase: sl<GetRouteMapUseCase>()),
   );
 
   await AppDatabase.testing();

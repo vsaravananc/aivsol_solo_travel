@@ -42,13 +42,11 @@ class _RecentlySearchTripsWidgetState
           );
         }
 
-        // Hide the entire section when fetching fails.
         if (state is RecentTripsFailure) {
           return const SizedBox.shrink();
         }
 
         if (state is RecentTripsLoaded) {
-          // Hide the entire section when there are no trips.
           if (state.trips.isEmpty) {
             return const SizedBox.shrink();
           }

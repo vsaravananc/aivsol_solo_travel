@@ -23,6 +23,8 @@ import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_event.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/route_map_bloc.dart';
+import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/route_map_event.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,12 +68,24 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchRouteMap();
     if (widget.useLocalData && widget.id != null) {
       _loadFromLocalDatabase(widget.id!);
     } else {
       _fetchWeather();
       _estimateBudget();
     }
+  }
+
+  void _fetchRouteMap() {
+    context.read<RouteMapBloc>().add(
+      FetchRouteMapEvent(
+        startLat: widget.fromLocation.latitude,
+        startLng: widget.fromLocation.longitude,
+        endLat: widget.destinationLocation.latitude,
+        endLng: widget.destinationLocation.longitude,
+      ),
+    );
   }
 
   Future<void> _loadFromLocalDatabase(int id) async {
@@ -222,6 +236,8 @@ class _DetailScreenState extends State<DetailScreen> {
                   dateRange: widget.dateRange,
                   days: widget.days,
                   travelStyle: widget.travelStyleEnum.name,
+                  fromLocation: widget.fromLocation,
+                  destinationLocation: widget.destinationLocation,
                 ),
                 DetailBudgetSectionWidget(
                   onRetry: widget.useLocalData && widget.id != null
