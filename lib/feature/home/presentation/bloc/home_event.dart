@@ -8,6 +8,36 @@ sealed class HomeEvent extends Equatable {
   List<Object?> get props => [];
 }
 
+class FromLocationSelectedEvent extends HomeEvent {
+  final String address;
+  final double latitude;
+  final double longitude;
+
+  const FromLocationSelectedEvent({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  @override
+  List<Object?> get props => [address, latitude, longitude];
+}
+
+class ToLocationSelectedEvent extends HomeEvent {
+  final String address;
+  final double latitude;
+  final double longitude;
+
+  const ToLocationSelectedEvent({
+    required this.address,
+    required this.latitude,
+    required this.longitude,
+  });
+
+  @override
+  List<Object?> get props => [address, latitude, longitude];
+}
+
 class FromLocationChangedEvent extends HomeEvent {
   final String from;
 

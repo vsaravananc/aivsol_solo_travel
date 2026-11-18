@@ -13,6 +13,17 @@ class LocationBloc extends Bloc<LocationEvent, LocationState> {
     required this.resolveTripLocations,
   }) : super(const LocationInitial()) {
     on<ResolveTripLocationsEvent>(_onResolveTripLocations);
+    on<SetPredefinedLocationsEvent>(_onSetPredefinedLocations);
+  }
+
+  void _onSetPredefinedLocations(
+    SetPredefinedLocationsEvent event,
+    Emitter<LocationState> emit,
+  ) {
+    emit(LocationSuccess(
+      fromLocation: event.fromLocation,
+      toLocation: event.toLocation,
+    ));
   }
 
   Future<void> _onResolveTripLocations(

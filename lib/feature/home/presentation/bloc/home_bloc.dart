@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc() : super(_initialState()) {
+    on<FromLocationSelectedEvent>(_onFromLocationSelected);
+    on<ToLocationSelectedEvent>(_onToLocationSelected);
     on<FromLocationChangedEvent>(_onFromLocationChanged);
     on<ToLocationChangedEvent>(_onToLocationChanged);
     on<LocationsSwappedEvent>(_onLocationsSwapped);
@@ -20,6 +22,28 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       endDate: DateTime(now.year, now.month, now.day + 5),
       travelStyle: TravelStyle.standard,
     );
+  }
+
+  void _onFromLocationSelected(
+    FromLocationSelectedEvent event,
+    Emitter<HomeState> emit,
+  ) {
+    emit(state.copyWith(
+      from: event.address,
+      fromLatitude: event.latitude,
+      fromLongitude: event.longitude,
+    ));
+  }
+
+  void _onToLocationSelected(
+    ToLocationSelectedEvent event,
+    Emitter<HomeState> emit,
+  ) {
+    emit(state.copyWith(
+      to: event.address,
+      toLatitude: event.latitude,
+      toLongitude: event.longitude,
+    ));
   }
 
   void _onFromLocationChanged(
@@ -42,7 +66,11 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   ) {
     emit(state.copyWith(
       from: state.to,
+      fromLatitude: state.toLatitude,
+      fromLongitude: state.toLongitude,
       to: state.from,
+      toLatitude: state.fromLatitude,
+      toLongitude: state.fromLongitude,
     ));
   }
 
@@ -65,8 +93,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   void _onRevertSelected(RevertSelectedEvent event, Emitter<HomeState> emit) {
     emit(state.copyWith(
-      from: '',
-      to: '',
+      clearFrom: true,
+      clearTo: true,
     ));
   }
 }

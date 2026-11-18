@@ -1,6 +1,7 @@
 import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/save_trip_history_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/save_trip_history_event.dart';
+import 'package:aivsol_solo_travel/feature/home/domain/entities/location_entity.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_event.dart';
@@ -45,12 +46,33 @@ class GenerateTripPlanButtonWidget extends StatelessWidget {
                 context.read<SaveTripHistoryBloc>().add(
                   const RestartSaveTripHistoryEvent(),
                 );
-                context.read<LocationBloc>().add(
-                  ResolveTripLocationsEvent(
-                    fromCity: context.read<HomeBloc>().state.from!,
-                    toCity: context.read<HomeBloc>().state.to!,
-                  ),
-                );
+                final homeState = context.read<HomeBloc>().state;
+                if (homeState.fromLatitude != null &&
+                    homeState.fromLongitude != null &&
+                    homeState.toLatitude != null &&
+                    homeState.toLongitude != null) {
+                  context.read<LocationBloc>().add(
+                    SetPredefinedLocationsEvent(
+                      fromLocation: LocationEntity(
+                        name: homeState.from!,
+                        latitude: homeState.fromLatitude!,
+                        longitude: homeState.fromLongitude!,
+                      ),
+                      toLocation: LocationEntity(
+                        name: homeState.to!,
+                        latitude: homeState.toLatitude!,
+                        longitude: homeState.toLongitude!,
+                      ),
+                    ),
+                  );
+                } else {
+                  context.read<LocationBloc>().add(
+                    ResolveTripLocationsEvent(
+                      fromCity: homeState.from!,
+                      toCity: homeState.to!,
+                    ),
+                  );
+                }
               }
             : null,
         child: isLoading

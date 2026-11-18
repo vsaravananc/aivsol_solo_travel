@@ -11,8 +11,12 @@ import 'package:aivsol_solo_travel/feature/history/presentation/bloc/history_blo
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/location_bloc.dart';
 import 'package:aivsol_solo_travel/feature/home/presentation/bloc/recent_trips_bloc.dart';
-import 'package:aivsol_solo_travel/feature/map/presentation/bloc/map_bloc.dart';
+import 'package:aivsol_solo_travel/feature/map_picker/presentation/bloc/map_picker_bloc.dart';
 import 'package:aivsol_solo_travel/feature/detail/presentation/bloc/route_map_bloc.dart';
+import 'package:aivsol_solo_travel/core/network/bloc/network_connectivity_bloc.dart';
+import 'package:aivsol_solo_travel/core/network/bloc/network_connectivity_event.dart';
+import 'package:aivsol_solo_travel/core/utility/scaffold_messenger_key.dart';
+import 'package:aivsol_solo_travel/core/widgets/network_connectivity_listener.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -32,6 +36,10 @@ class AivsolSoloTravel extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (_) => sl<NetworkConnectivityBloc>()
+            ..add(const NetworkConnectivityStarted()),
+        ),
         BlocProvider(create: (_) => sl<HomeBloc>()),
         BlocProvider(create: (_) => sl<LocationBloc>()),
         BlocProvider(create: (_) => sl<WeatherBloc>()),
@@ -39,13 +47,19 @@ class AivsolSoloTravel extends StatelessWidget {
         BlocProvider(create: (_) => sl<SaveTripHistoryBloc>()),
         BlocProvider(create: (_) => sl<RecentTripsBloc>()),
         BlocProvider(create: (_) => sl<HistoryBloc>()),
-        BlocProvider(create: (_) => sl<MapBloc>()),
         BlocProvider(create: (_) => sl<RouteMapBloc>()),
+        BlocProvider(create: (_) => sl<MapPickerBloc>()),
       ],
       child: MaterialApp.router(
+        scaffoldMessengerKey: rootScaffoldMessengerKey,
         routerConfig: AppRouter().router,
         theme: LightTheme.themeData,
         title: 'Aivsol Solo Travel',
+        builder: (context, child) {
+          return NetworkConnectivityListener(
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
       ),
     );
   }

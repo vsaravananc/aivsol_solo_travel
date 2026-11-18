@@ -4,6 +4,11 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<!-- External app navigation: all third-party apps (OYO, Airbnb, MakeMyTrip,
+	     IndiGo) are opened via HTTPS Universal Links. No LSApplicationQueriesSchemes
+	     entries are required for HTTPS-only launch mode.
+	     If you later add a custom-scheme app (e.g., airbnb://), add its scheme to
+	     LSApplicationQueriesSchemes so canLaunchUrl() can query it on iOS 9+. -->
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../../domain/entities/location_entity.dart';
+
 sealed class LocationEvent extends Equatable {
   const LocationEvent();
 
@@ -18,4 +20,17 @@ class ResolveTripLocationsEvent extends LocationEvent {
 
   @override
   List<Object?> get props => [fromCity, toCity];
+}
+
+class SetPredefinedLocationsEvent extends LocationEvent {
+  final LocationEntity fromLocation;
+  final LocationEntity toLocation;
+
+  const SetPredefinedLocationsEvent({
+    required this.fromLocation,
+    required this.toLocation,
+  });
+
+  @override
+  List<Object?> get props => [fromLocation, toLocation];
 }

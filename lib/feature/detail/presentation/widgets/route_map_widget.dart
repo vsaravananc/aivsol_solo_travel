@@ -119,9 +119,14 @@ class _RouteMapWidgetState extends State<RouteMapWidget> {
                     ),
                     children: [
                       TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.aivsol_solo_travel',
+                        urlTemplate: 'http://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
+                        subdomains: ['0', '1', '2', '3'],
+                        tileProvider: NetworkTileProvider(
+                          cachingProvider:
+                              BuiltInMapCachingProvider.getOrCreateInstance(
+                                maxCacheSize: 1_000_000_000,
+                              ),
+                        ),
                       ),
 
                       if (coordinates.isNotEmpty)

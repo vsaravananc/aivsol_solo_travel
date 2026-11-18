@@ -29,26 +29,19 @@ class DetailHeaderWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: .start,
       children: [
-        RouteMapWidget(
-          fromName: from,
-          toName: to,
-          fromLocation: LatLng(fromLocation.latitude, fromLocation.longitude),
-          destinationLocation: LatLng(
-            destinationLocation.latitude,
-            destinationLocation.longitude,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          '$from  →  $to',
-          style: context.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 4),
+        // Text(
+        //   '$from  →  $to',
+        //   style: context.textTheme.headlineMedium?.copyWith(
+        //     fontWeight: FontWeight.w700,
+        //   ),
+        //   maxLines: 1,
+        //   overflow: .fade,
+        // ),
+        // const SizedBox(height: 4),
         Row(
+          mainAxisAlignment: .center,
           children: [
             const Icon(
               Icons.calendar_today_outlined,
@@ -61,6 +54,16 @@ class DetailHeaderWidget extends StatelessWidget {
               style: context.textTheme.bodyMedium,
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        RouteMapWidget(
+          fromName: from,
+          toName: to,
+          fromLocation: LatLng(fromLocation.latitude, fromLocation.longitude),
+          destinationLocation: LatLng(
+            destinationLocation.latitude,
+            destinationLocation.longitude,
+          ),
         ),
         const SizedBox(height: 12),
       ],

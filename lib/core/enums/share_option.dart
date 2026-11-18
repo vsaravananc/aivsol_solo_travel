@@ -1,7 +1,11 @@
 import 'package:aivsol_solo_travel/core/utility/api_end_points.dart';
 import 'package:flutter/material.dart';
 
+/// Enum values for the original URL-based and native-share options in the
+/// detail share sheet. External third-party app options (OYO, Airbnb, etc.)
+/// are handled separately via [ExternalApps] and [ExternalAppLauncher].
 enum ShareOption {
+  // ── URL-based options ────────────────────────────────────────────────────
   googleMaps(
     title: 'Open in Google Maps',
     subtitle: 'Explore your destination',
@@ -22,6 +26,8 @@ enum ShareOption {
     url:
         '${ApiEndPoints.hotel}?q=hotels+in+{destination}+on+{fromdate}+through+{destinationdate}',
   ),
+
+  // ── Native share ─────────────────────────────────────────────────────────
   shareTrip(
     title: 'Share Trip Plan',
     subtitle: 'Share your itinerary with friends',
@@ -31,9 +37,11 @@ enum ShareOption {
   final String title;
   final String subtitle;
   final IconData icon;
+
+  /// Non-null for URL-based options; null for [shareTrip].
   final String? url;
 
-  ShareOption({
+  const ShareOption({
     required this.title,
     required this.subtitle,
     required this.icon,

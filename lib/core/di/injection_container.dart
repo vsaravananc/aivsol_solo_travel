@@ -33,12 +33,19 @@ import '../../feature/home/domain/usecases/resolve_trip_locations.dart';
 import '../../feature/home/presentation/bloc/home_bloc.dart';
 import '../../feature/home/presentation/bloc/location_bloc.dart';
 import '../../feature/home/presentation/bloc/recent_trips_bloc.dart';
-import '../../feature/map/presentation/bloc/map_bloc.dart';
 import '../../feature/detail/data/datasources/route_map_remote_data_source.dart';
 import '../../feature/detail/data/repositories/route_map_repository_impl.dart';
 import '../../feature/detail/domain/repositories/route_map_repository.dart';
 import '../../feature/detail/domain/usecases/get_route_map_usecase.dart';
 import '../../feature/detail/presentation/bloc/route_map_bloc.dart';
+import '../../feature/map_picker/data/datasources/nominatim_remote_data_source.dart';
+import '../../feature/map_picker/data/repositories/map_picker_repository_impl.dart';
+import '../../feature/map_picker/domain/repositories/map_picker_repository.dart';
+import '../../feature/map_picker/domain/usecases/reverse_geocode_usecase.dart';
+import '../../feature/map_picker/domain/usecases/search_places_usecase.dart';
+import '../../feature/map_picker/presentation/bloc/map_picker_bloc.dart';
+import '../network/network_connectivity_manager.dart';
+import '../network/bloc/network_connectivity_bloc.dart';
 
 final sl = GetIt.instance;
 
@@ -170,8 +177,6 @@ Future<void> initDependencies() async {
     () => HistoryBloc(getAllTripHistory: sl<GetAllTripHistory>()),
   );
 
-  sl.registerFactory<MapBloc>(() => MapBloc());
-
   sl.registerLazySingleton<RouteMapRemoteDataSource>(
     () => RouteMapRemoteDataSourceImpl(dio: sl<Dio>()),
   );
@@ -188,6 +193,43 @@ Future<void> initDependencies() async {
 
   sl.registerFactory<RouteMapBloc>(
     () => RouteMapBloc(getRouteMapUseCase: sl<GetRouteMapUseCase>()),
+  );
+
+  sl.registerLazySingleton<NominatimRemoteDataSource>(
+    () => NominatimRemoteDataSourceImpl(dio: sl<Dio>()),
+  );
+
+  sl.registerLazySingleton<MapPickerRepository>(
+    () => MapPickerRepositoryImpl(
+      remoteDataSource: sl<NominatimRemoteDataSource>(),
+    ),
+  );
+
+  sl.registerLazySingleton<SearchPlacesUseCase>(
+    () => SearchPlacesUseCase(sl<MapPickerRepository>()),
+  );
+
+  sl.registerLazySingleton<ReverseGeocodeUseCase>(
+    () => ReverseGeocodeUseCase(sl<MapPickerRepository>()),
+  );
+
+  sl.registerFactory<MapPickerBloc>(
+    () => MapPickerBloc(
+      searchPlacesUseCase: sl<SearchPlacesUseCase>(),
+      reverseGeocodeUseCase: sl<ReverseGeocodeUseCase>(),
+    ),
+  );
+
+  sl.registerLazySingleton<NetworkConnectivityManager>(
+    () => NetworkConnectivityManagerImpl(
+      dio: sl<Dio>(),
+    ),
+  );
+
+  sl.registerFactory<NetworkConnectivityBloc>(
+    () => NetworkConnectivityBloc(
+      networkConnectivityManager: sl<NetworkConnectivityManager>(),
+    ),
   );
 
   await AppDatabase.testing();

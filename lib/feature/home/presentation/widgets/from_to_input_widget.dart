@@ -1,11 +1,14 @@
-import 'dart:async';
-import 'package:aivsol_solo_travel/core/extensions/theme_extensions.dart';
-import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_bloc.dart';
-import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_event.dart';
-import 'package:aivsol_solo_travel/feature/home/presentation/bloc/home_state.dart';
-import 'package:aivsol_solo_travel/feature/home/presentation/widgets/custom_filed_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:latlong2/latlong.dart';
+
+import '../../../../core/extensions/theme_extensions.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../map_picker/domain/entities/selected_location_entity.dart';
+import '../../../map_picker/presentation/screens/map_screen.dart';
+import '../bloc/home_bloc.dart';
+import '../bloc/home_event.dart';
+import '../bloc/home_state.dart';
 
 class FromToInputWidget extends StatefulWidget {
   const FromToInputWidget({super.key});
@@ -15,181 +18,164 @@ class FromToInputWidget extends StatefulWidget {
 }
 
 class _FromToInputWidgetState extends State<FromToInputWidget> {
-  late TextEditingController fromController;
-  late TextEditingController toController;
-  late FocusNode fromFocusNode;
-  late FocusNode toFocusNode;
-  ValueNotifier<double> rotationTurns = ValueNotifier(0.0);
-  Timer? _fromDebounce;
-  Timer? _toDebounce;
-  static const _debounceDuration = Duration(milliseconds: 300);
-
-  @override
-  void initState() {
-    super.initState();
-    fromController = TextEditingController()..addListener(_onFromChanged);
-    toController = TextEditingController()..addListener(_onToChanged);
-    fromFocusNode = FocusNode();
-    toFocusNode = FocusNode();
-  }
-
-  void _onFromChanged() {
-    _fromDebounce?.cancel();
-    _fromDebounce = Timer(_debounceDuration, () {
-      if (!mounted) return;
-      final currentFrom = context.read<HomeBloc>().state.from ?? '';
-      if (currentFrom != fromController.text) {
-        context.read<HomeBloc>().add(FromLocationChangedEvent(fromController.text));
-      }
-    });
-  }
-
-  void _onToChanged() {
-    _toDebounce?.cancel();
-    _toDebounce = Timer(_debounceDuration, () {
-      if (!mounted) return;
-      final currentTo = context.read<HomeBloc>().state.to ?? '';
-      if (currentTo != toController.text) {
-        context.read<HomeBloc>().add(ToLocationChangedEvent(toController.text));
-      }
-    });
-  }
+  final ValueNotifier<double> rotationTurns = ValueNotifier(0.0);
 
   @override
   void dispose() {
-    _fromDebounce?.cancel();
-    _toDebounce?.cancel();
-    fromController.removeListener(_onFromChanged);
-    toController.removeListener(_onToChanged);
-    fromController.dispose();
-    toController.dispose();
-    fromFocusNode.dispose();
-    toFocusNode.dispose();
     rotationTurns.dispose();
     super.dispose();
   }
 
   void _handleSwap() {
-    _fromDebounce?.cancel();
-    _toDebounce?.cancel();
     rotationTurns.value += 0.5;
-    final temp = fromController.text;
-    fromController.text = toController.text;
-    toController.text = temp;
     context.read<HomeBloc>().add(const LocationsSwappedEvent());
+  }
+
+  Future<void> _selectLocation({required bool isFrom}) async {
+    final homeState = context.read<HomeBloc>().state;
+    final existingCoord = isFrom
+        ? (homeState.fromLatitude != null && homeState.fromLongitude != null
+            ? LatLng(homeState.fromLatitude!, homeState.fromLongitude!)
+            : null)
+        : (homeState.toLatitude != null && homeState.toLongitude != null
+            ? LatLng(homeState.toLatitude!, homeState.toLongitude!)
+            : null);
+
+    final result = await Navigator.push<SelectedLocationEntity>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => MapScreen(
+          initialLocation: existingCoord,
+          title: isFrom ? 'Select Departure Location' : 'Select Destination',
+        ),
+      ),
+    );
+
+    if (result != null && mounted) {
+      if (isFrom) {
+        context.read<HomeBloc>().add(
+              FromLocationSelectedEvent(
+                address: result.address,
+                latitude: result.latitude,
+                longitude: result.longitude,
+              ),
+            );
+      } else {
+        context.read<HomeBloc>().add(
+              ToLocationSelectedEvent(
+                address: result.address,
+                latitude: result.latitude,
+                longitude: result.longitude,
+              ),
+            );
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<HomeBloc, HomeState>(
-      listenWhen: (previous, current) =>
-          previous.from != current.from || previous.to != current.to,
-      listener: (context, state) {
-        if (state.from != null && state.from != fromController.text) {
-          fromController.text = state.from!;
-        }
-        if (state.to != null && state.to != toController.text) {
-          toController.text = state.to!;
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsets.only(top: 12.0),
-        child: Stack(
-          alignment: .centerRight,
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-              decoration: BoxDecoration(
-                color: context.themeData.scaffoldBackgroundColor,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: context.themeData.disabledColor.withAlpha(12),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: context.themeData.shadowColor.withAlpha(20),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
+    return BlocBuilder<HomeBloc, HomeState>(
+      builder: (context, state) {
+        final fromText = state.from;
+        final toText = state.to;
+
+        return Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Stack(
+            alignment: Alignment.centerRight,
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+                decoration: BoxDecoration(
+                  color: context.themeData.scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: context.themeData.disabledColor.withAlpha(12),
+                    width: 1.2,
                   ),
-                ],
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 12,
-                children: [
-                  Column(
-                    mainAxisSize: .min,
-                    children: [
-                      Container(
-                        padding: const .all(8),
-                        decoration: BoxDecoration(
-                          color: context.themeData.primaryColor.withAlpha(30),
-                          shape: .circle,
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 12,
-                            height: 12,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: context.themeData.primaryColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.themeData.shadowColor.withAlpha(20),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: context.themeData.primaryColor.withAlpha(30),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Container(
+                              width: 12,
+                              height: 12,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: context.themeData.primaryColor,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Container(
-                        width: 1.2,
-                        height: 35,
-                        color: context.themeData.primaryColor.withAlpha(30),
-                      ),
-                      Container(
-                        padding: const .all(6),
-                        decoration: BoxDecoration(
+                        Container(
+                          width: 1.2,
+                          height: 35,
                           color: context.themeData.primaryColor.withAlpha(30),
-                          shape: .circle,
                         ),
-                        child: Center(
-                          child: Icon(
-                            Icons.location_on_rounded,
-                            color: context.themeData.primaryColor,
-                            size: 17,
+                        Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: context.themeData.primaryColor.withAlpha(30),
+                            shape: BoxShape.circle,
                           ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 16,
-                      children: [
-                        CustomFieldWidget(
-                          label: 'From',
-                          controller: fromController,
-                          focusNode: fromFocusNode,
-                          hintText: 'Bengaluru (BLR)',
-                          textInputAction: TextInputAction.next,
-                        ),
-                        CustomFieldWidget(
-                          label: 'To',
-                          controller: toController,
-                          focusNode: toFocusNode,
-                          hintText: 'Varkala, Kerala',
-                          textInputAction: TextInputAction.done,
+                          child: Center(
+                            child: Icon(
+                              Icons.location_on_rounded,
+                              color: context.themeData.primaryColor,
+                              size: 17,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _LocationSelectField(
+                            label: 'From',
+                            value: fromText,
+                            placeholder: 'Bengaluru , Kerala , etc ...',
+                            onTap: () => _selectLocation(isFrom: true),
+                          ),
+                          const SizedBox(height: 16),
+                          _LocationSelectField(
+                            label: 'To',
+                            value: toText,
+                            placeholder: 'Chennai , Coimbatore , etc ...',
+                            onTap: () => _selectLocation(isFrom: false),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 44),  
+                  ],
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: Focus(
-                canRequestFocus: false,
-                autofocus: false,
+
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
                 child: Material(
                   color: Colors.transparent,
                   child: InkWell(
@@ -200,7 +186,7 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                       height: 42,
                       decoration: BoxDecoration(
                         color: context.themeData.colorScheme.surface,
-                        shape: .circle,
+                        shape: BoxShape.circle,
                         border: Border.all(
                           color: context.themeData.dividerColor.withAlpha(20),
                           width: 1,
@@ -215,8 +201,8 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                       ),
                       child: Center(
                         child: AnimatedBuilder(
-                          animation: Listenable.merge([rotationTurns]),
-                          builder: (context, value) {
+                          animation: rotationTurns,
+                          builder: (context, _) {
                             return AnimatedRotation(
                               turns: rotationTurns.value,
                               duration: const Duration(milliseconds: 300),
@@ -234,6 +220,67 @@ class _FromToInputWidgetState extends State<FromToInputWidget> {
                   ),
                 ),
               ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _LocationSelectField extends StatelessWidget {
+  final String label;
+  final String? value;
+  final String placeholder;
+  final VoidCallback onTap;
+
+  const _LocationSelectField({
+    required this.label,
+    required this.value,
+    required this.placeholder,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasValue = value != null && value!.trim().isNotEmpty;
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              label,
+              style: context.textTheme.bodySmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.4,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    hasValue ? value! : placeholder,
+                    style: hasValue
+                        ? context.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          )
+                        : context.textTheme.bodyMedium?.copyWith(
+                            color: AppColors.textSecondary,
+                            fontWeight: FontWeight.w400,
+                          ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                
+              ],
             ),
           ],
         ),

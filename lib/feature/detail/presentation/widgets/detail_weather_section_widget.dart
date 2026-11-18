@@ -31,6 +31,8 @@ class DetailWeatherSectionWidget extends StatelessWidget {
               fontWeight: FontWeight.w700,
               letterSpacing: 1.0,
             ),
+            maxLines: 1,
+            overflow: .ellipsis,
           ),
           const SizedBox(height: 6),
           Container(
@@ -306,7 +308,6 @@ class _ForecastDayWidget extends StatelessWidget {
   final DailyWeatherEntity forecast;
 
   const _ForecastDayWidget({required this.forecast});
-
 
   @override
   Widget build(BuildContext context) {
